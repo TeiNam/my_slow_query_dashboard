@@ -190,25 +190,25 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                       >
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
                       <span className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-1 flex-shrink-0" />
+                        <Calendar className="w-4 h-4 mr-1 flex-shrink-0"/>
                         {formatDate(query.start)}
                       </span>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
                       <span className="flex items-center">
-                        <Database className="w-4 h-4 mr-1 flex-shrink-0" />
+                        <Database className="w-4 h-4 mr-1 flex-shrink-0"/>
                         {query.instance}
                       </span>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
                       <span className="flex items-center">
-                        <Server className="w-4 h-4 mr-1 flex-shrink-0" />
+                        <Server className="w-4 h-4 mr-1 flex-shrink-0"/>
                         {query.db}
                       </span>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
                       <span className="flex items-center">
-                        <User className="w-4 h-4 mr-1 flex-shrink-0" />
+                        <User className="w-4 h-4 mr-1 flex-shrink-0"/>
                         {query.user}@{query.host}
                       </span>
                         </td>
@@ -227,7 +227,7 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
                       <span className="flex items-center">
                         <Clock className="w-4 h-4 mr-1 flex-shrink-0"/>
-                        {query.time.toFixed(2)}s
+                        {Math.round(query.time)}s
                       </span>
                         </td>
                         <td className="px-2 py-2 text-sm relative w-[500px] max-w-[500px] overflow-hidden">
@@ -235,9 +235,11 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                             {query.sql_text}
                           </div>
                           {selectedQuery?.pid === query.pid && (
-                              <div className="fixed right-4 top-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg border border-gray-200 min-w-[600px] max-w-3xl z-[9999]">
+                              <div
+                                  className="fixed right-4 top-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg border border-gray-200 min-w-[600px] max-w-3xl z-[9999]">
                                 <div className="flex justify-between items-start mb-2">
-                                  <span className="text-sm font-medium text-gray-700">SQL Query (PID: {query.pid})</span>
+                                  <span
+                                      className="text-sm font-medium text-gray-700">SQL Query (PID: {query.pid})</span>
                                   <button
                                       onClick={(e) => handleCopyQuery(query.sql_text, e)}
                                       className="p-1 hover:bg-gray-100 rounded-md transition-colors"
@@ -250,7 +252,8 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                                     )}
                                   </button>
                                 </div>
-                                <pre className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-md overflow-x-auto">
+                                <pre
+                                    className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-md overflow-x-auto">
                             {formatSql(query.sql_text)}
                           </pre>
                               </div>
