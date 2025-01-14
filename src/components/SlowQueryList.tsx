@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Database, User, Server, Copy, Check, Calendar, Hash } from 'lucide-react';
+import { Calendar, Clock, Database, User, Server, Copy, Check, Globe, Filter, Hash } from 'lucide-react';
 import { format } from 'sql-formatter';
 import { SlowQuery } from '../types/api';
 
@@ -10,23 +10,41 @@ interface QueryListResponse {
   items: SlowQuery[];
 }
 
-export function SlowQueryList() {
+interface SlowQueryListProps {
+  onPidSelect: (pid: string) => void;
+}
+
+export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
   const [queries, setQueries] = useState<QueryListResponse | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedQuery, setSelectedQuery] = useState<SlowQuery | null>(null);
   const [copiedQuery, setCopiedQuery] = useState<string | null>(null);
+  const [timezone, setTimezone] = useState<'UTC' | 'KST'>('KST');
+  const [selectedInstance, setSelectedInstance] = useState<string>('');
+  const [instances, setInstances] = useState<string[]>([]);
 
-  const fetchQueries = async (page: number) => {
+  const fetchQueries = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/mysql/queries?page=${page}&page_size=20`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch queries');
+      let url = `http://localhost:8000/mysql/queries?page=${currentPage}&page_size=20`;
+
+      if (selectedInstance) {
+        url += `&instance=${selectedInstance}`;
       }
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch queries');
       const data = await response.json();
       setQueries(data);
+
+      // 쿼리 결과에서 고유한 인스턴스 목록 추출
+      if (data.items && !selectedInstance) {
+        const uniqueInstances = Array.from(new Set(data.items.map(item => item.instance))).sort();
+        setInstances(uniqueInstances);
+      }
+
       setError(null);
     } catch (err) {
       setError('Failed to fetch slow queries');
@@ -37,11 +55,17 @@ export function SlowQueryList() {
   };
 
   useEffect(() => {
-    fetchQueries(currentPage);
-  }, [currentPage]);
+    fetchQueries();
+  }, [currentPage, selectedInstance]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+    const date = new Date(dateString);
+    if (timezone === 'KST') {
+      return new Date(date.getTime() + 9 * 60 * 60 * 1000).toLocaleString('ko-KR', {
+        timeZone: 'Asia/Seoul'
+      });
+    }
+    return date.toLocaleString('en-US', { timeZone: 'UTC' });
   };
 
   const formatSql = (sql: string) => {
@@ -96,9 +120,40 @@ export function SlowQueryList() {
   return (
       <div className="bg-white rounded-lg shadow">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">
-            Slow Queries
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
+              Slow Queries
+            </h3>
+            <div className="flex items-center gap-4">
+              {/* 인스턴스 필터 */}
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-gray-500" />
+                <select
+                    value={selectedInstance}
+                    onChange={(e) => setSelectedInstance(e.target.value)}
+                    className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                >
+                  <option value="">All Instances</option>
+                  {instances.map((instance) => (
+                      <option key={instance} value={instance}>{instance}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 타임존 선택 */}
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-gray-500" />
+                <select
+                    value={timezone}
+                    onChange={(e) => setTimezone(e.target.value as 'UTC' | 'KST')}
+                    className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                >
+                  <option value="KST">KST</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
           {loading ? (
               <div className="animate-pulse space-y-4">
@@ -134,58 +189,55 @@ export function SlowQueryList() {
                           }}
                       >
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
-                     <span className="flex items-center">
-                       <Calendar className="w-4 h-4 mr-1 flex-shrink-0" />
-                       {formatDate(query.start)}
-                     </span>
+                      <span className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-1 flex-shrink-0" />
+                        {formatDate(query.start)}
+                      </span>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
-                     <span className="flex items-center">
-                       <Database className="w-4 h-4 mr-1 flex-shrink-0" />
-                       {query.instance}
-                     </span>
+                      <span className="flex items-center">
+                        <Database className="w-4 h-4 mr-1 flex-shrink-0" />
+                        {query.instance}
+                      </span>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
-                     <span className="flex items-center">
-                       <Server className="w-4 h-4 mr-1 flex-shrink-0" />
-                       {query.db}
-                     </span>
+                      <span className="flex items-center">
+                        <Server className="w-4 h-4 mr-1 flex-shrink-0" />
+                        {query.db}
+                      </span>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
-                     <span className="flex items-center">
-                       <User className="w-4 h-4 mr-1 flex-shrink-0" />
-                       {query.user}@{query.host}
-                     </span>
+                      <span className="flex items-center">
+                        <User className="w-4 h-4 mr-1 flex-shrink-0" />
+                        {query.user}@{query.host}
+                      </span>
                         </td>
                         <td
                             className="px-2 py-2 whitespace-nowrap text-sm cursor-pointer hover:text-blue-600"
                             onClick={(e) => {
-                              e.stopPropagation();  // 로우 클릭 이벤트 전파 방지
-                              // Assuming 'onPidSelect' is not defined, we'll comment it out
-                              // onPidSelect(query.pid.toString());
+                              e.stopPropagation();
+                              onPidSelect(query.pid.toString());
                             }}
                         >
-                          <span className="flex items-center">
-                            <Hash className="w-4 h-4 mr-1 flex-shrink-0"/>
-                            {query.pid}
-                          </span>
+                      <span className="flex items-center">
+                        <Hash className="w-4 h-4 mr-1 flex-shrink-0"/>
+                        {query.pid}
+                      </span>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
-                     <span className="flex items-center">
-                       <Clock className="w-4 h-4 mr-1 flex-shrink-0"/>
-                       {query.time.toFixed(2)}s
-                     </span>
+                      <span className="flex items-center">
+                        <Clock className="w-4 h-4 mr-1 flex-shrink-0"/>
+                        {query.time.toFixed(2)}s
+                      </span>
                         </td>
                         <td className="px-2 py-2 text-sm relative w-[500px] max-w-[500px] overflow-hidden">
                           <div className="truncate w-full">
                             {query.sql_text}
                           </div>
                           {selectedQuery?.pid === query.pid && (
-                              <div
-                                  className="fixed right-4 top-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg border border-gray-200 min-w-[600px] max-w-3xl z-[9999]">
+                              <div className="fixed right-4 top-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg border border-gray-200 min-w-[600px] max-w-3xl z-[9999]">
                                 <div className="flex justify-between items-start mb-2">
-                                  <span
-                                      className="text-sm font-medium text-gray-700">SQL Query (PID: {query.pid})</span>
+                                  <span className="text-sm font-medium text-gray-700">SQL Query (PID: {query.pid})</span>
                                   <button
                                       onClick={(e) => handleCopyQuery(query.sql_text, e)}
                                       className="p-1 hover:bg-gray-100 rounded-md transition-colors"
@@ -198,10 +250,9 @@ export function SlowQueryList() {
                                     )}
                                   </button>
                                 </div>
-                                <pre
-                                    className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-md overflow-x-auto">
-                           {formatSql(query.sql_text)}
-                         </pre>
+                                <pre className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-md overflow-x-auto">
+                            {formatSql(query.sql_text)}
+                          </pre>
                               </div>
                           )}
                         </td>
