@@ -37,6 +37,11 @@ export interface ExplainPlan {
   instance: string;
   time: number;
   sql_text: string;
+  explain_result?: {
+    json: any;
+    tree: string;
+    error: string | null;
+  };
 }
 
 export interface ExplainPlanListResponse {
