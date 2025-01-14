@@ -30,3 +30,18 @@ export interface SlowQuery {
   start: string;
   end?: string;
 }
+
+export interface ExplainPlan {
+  pid: number;
+  created_at: string;
+  instance: string;
+  time: number;
+  sql_text: string;
+}
+
+export interface ExplainPlanListResponse {
+  total: number;
+  page: number;
+  page_size: number;
+  items: ExplainPlan[];
+}

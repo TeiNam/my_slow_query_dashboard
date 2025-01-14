@@ -1,8 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Database, CloudCog } from 'lucide-react';
+import { Database, CloudCog, Share2 } from 'lucide-react';
 import { MySQLMonitorPage } from './pages/MySQLMonitorPage';
 import { CloudWatchPage } from './pages/CloudWatchPage';
+import { PlanVisualizationPage } from './pages/PlanVisualizationPage';
 
 function App() {
   return (
@@ -30,6 +31,13 @@ function App() {
                       <CloudCog className="w-4 h-4 mr-2" />
                       CloudWatch
                     </Link>
+                    <Link
+                        to="/plan"
+                        className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 hover:text-blue-600"
+                    >
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Plan Visualization
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -41,6 +49,7 @@ function App() {
               <Route path="/" element={<MySQLMonitorPage />} />
               <Route path="/mysql" element={<MySQLMonitorPage />} />
               <Route path="/cloudwatch" element={<CloudWatchPage />} />
+              <Route path="/plan" element={<PlanVisualizationPage />} />
             </Routes>
           </main>
         </div>
