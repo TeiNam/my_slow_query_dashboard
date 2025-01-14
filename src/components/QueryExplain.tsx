@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import { collectQueryExplain, getExplainStatus } from '../api/queries';
+import { collectQueryExplain } from '../api/queries';
 import { ExplainResponse } from '../types/api';
-import { Search, CheckCircle2, Hash } from 'lucide-react';
+import { Search, CheckCircle2, Hash, Download, Microscope } from 'lucide-react';
 
 interface QueryExplainProps {
   selectedPid?: string;
@@ -26,7 +26,7 @@ export function QueryExplain({ selectedPid }: QueryExplainProps) {
       const result = await collectQueryExplain(parseInt(pid));
       setResponse(result);
       setShowSaveConfirm(true);
-      setTimeout(() => setShowSaveConfirm(false), 3000); // 3초 후 알림 숨김
+      setTimeout(() => setShowSaveConfirm(false), 3000);
     } catch (error) {
       console.error('Error collecting explain:', error);
     } finally {
@@ -34,14 +34,30 @@ export function QueryExplain({ selectedPid }: QueryExplainProps) {
     }
   };
 
-  const handleCheckStatus = async () => {
+  const handleDownloadMarkdown = async () => {
     if (!pid) return;
     try {
       setLoading(true);
-      const result = await getExplainStatus(parseInt(pid));
-      setResponse(result);
+      const response = await fetch(`http://localhost:8000/mysql/explain/${pid}/markdown`);
+      if (!response.ok) {
+        throw new Error('Failed to download markdown');
+      }
+
+      const blob = await response.blob();
+      const now = new Date();
+      const timestamp = now.toISOString().replace(/[:.]/g, '').slice(0, 15);
+      const fileName = `instance_pid_${pid}_${timestamp}.md`;
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (error) {
-      console.error('Error checking explain status:', error);
+      console.error('Error downloading markdown:', error);
     } finally {
       setLoading(false);
     }
@@ -77,16 +93,18 @@ export function QueryExplain({ selectedPid }: QueryExplainProps) {
           <button
               onClick={handleCollectExplain}
               disabled={loading || !pid}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="bg-blue-500 text-white h-10 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 inline-flex items-center gap-2"
           >
+            <Microscope className="w-4 h-4" />
             Collect Explain
           </button>
           <button
-              onClick={handleCheckStatus}
+              onClick={handleDownloadMarkdown}
               disabled={loading || !pid}
-              className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50"
+              className="bg-green-500 text-white h-10 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 inline-flex items-center gap-2"
           >
-            Check Status
+            <Download className="w-4 h-4" />
+            Download Markdown
           </button>
         </div>
 
