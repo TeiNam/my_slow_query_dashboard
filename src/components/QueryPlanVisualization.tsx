@@ -136,6 +136,7 @@ function parseQueryPlan(queryBlock: QueryBlock): { nodes: NodeData[], edges: Edg
         const orderingId = addNode('Ordering_Operation', 1);
         addEdge(rootId, orderingId);
 
+        // nested_loop가 있는 경우
         if (queryBlock.ordering_operation.nested_loop) {
             const loops = queryBlock.ordering_operation.nested_loop;
 
@@ -166,6 +167,14 @@ function parseQueryPlan(queryBlock: QueryBlock): { nodes: NodeData[], edges: Edg
                     addEdge(secondLoopId, tableId);
                 }
             }
+            // table이 직접 있는 경우
+        } else if (queryBlock.ordering_operation.table) {
+            const table = queryBlock.ordering_operation.table;
+            const tableId = addNode(`${table.table_name} (${table.access_type})`, 2, {
+                rows: table.rows_examined_per_scan,
+                filtered: table.filtered
+            });
+            addEdge(orderingId, tableId);
         }
     }
 

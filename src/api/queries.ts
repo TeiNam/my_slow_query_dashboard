@@ -42,7 +42,14 @@ export async function collectQueryExplain(pid: number) {
   return response.json();
 }
 
-export async function getExplainStatus(pid: number) {
-  const response = await fetch(`${API_BASE}/mysql/explain/${pid}`);
+export async function collectRDSInstances() {
+  const response = await fetch(`${API_BASE}/collectors/rds-instances`, {
+    method: 'POST',
+  });
+  return response.json();
+}
+
+export async function getRDSInstances() {
+  const response = await fetch(`${API_BASE}/rds-instances`);
   return response.json();
 }

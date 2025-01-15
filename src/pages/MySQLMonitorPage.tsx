@@ -13,8 +13,8 @@ export function MySQLMonitorPage() {
                     <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
                         MySQL Real-time Slow Query Monitor
                     </h2>
-                    <h4 className="text-base italic leading-7 text-gray-500 ml-36 sm:truncate sm:text-base sm:tracking-tight">
-                        - AWS Aurora for MySQL & RDS
+                    <h4 className="text-base italic leading-7 text-gray-500 ml-4 sm:truncate sm:text-base sm:tracking-tight">
+                        = AWS Aurora for MySQL & RDS =
                     </h4>
                 </div>
             </div>

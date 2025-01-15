@@ -50,3 +50,25 @@ export interface ExplainPlanListResponse {
   page_size: number;
   items: ExplainPlan[];
 }
+
+export interface RDSInstance {
+  DBInstanceIdentifier: string;
+  Engine: string;
+  EngineVersion: string;
+  DBInstanceStatus: string;
+  Endpoint?: {
+    Address: string;
+    Port: number;
+  };
+  InstanceCreateTime: string;
+  updateTime: string;
+}
+
+export interface CollectRDSResponse {
+  status: string;
+  message: string;
+  collected_count: number;
+  details: {
+    instance_ids: string[];
+  };
+}
