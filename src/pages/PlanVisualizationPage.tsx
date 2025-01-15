@@ -3,6 +3,7 @@ import { Database, Clock, Filter, Hash } from 'lucide-react';
 import { ExplainPlanListResponse, ExplainPlan } from '../types/api';
 import { QueryInformation } from '../components/QueryInformation';
 import { QueryPlanVisualization } from '../components/QueryPlanVisualization';
+import { QueryPlanDetails } from '../components/QueryPlanDetails';
 
 export function PlanVisualizationPage() {
     const [plans, setPlans] = useState<ExplainPlanListResponse | null>(null);
@@ -242,7 +243,10 @@ export function PlanVisualizationPage() {
                 <>
                     <QueryInformation plan={selectedPlan} />
                     {selectedPlan.explain_result && (
-                        <QueryPlanVisualization explainResult={selectedPlan.explain_result} />
+                        <>
+                            <QueryPlanVisualization explainResult={selectedPlan.explain_result} />
+                            <QueryPlanDetails explainResult={selectedPlan.explain_result} />
+                        </>
                     )}
                 </>
             )}

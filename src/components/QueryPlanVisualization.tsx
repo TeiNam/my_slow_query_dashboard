@@ -48,10 +48,10 @@ interface EdgeData {
 
 const CANVAS_CONFIG = {
     width: 1900,
-    height: 320,
+    height: 300,
     horizontalGap: 180,  // 가로 간격 축소
-    verticalGap: 150,    // 세로 간격 증가
-    startX: 100,
+    verticalGap: 110,    // 세로 간격 증가
+    startX: 120,
     levelY: {            // 각 레벨별 고정 Y 위치
         0: 50,           // Select
         1: 50,           // Ordering Operation
@@ -61,7 +61,7 @@ const CANVAS_CONFIG = {
 } as const;
 
 const NODE_STYLE = {
-    width: 160,
+    width: 200,
     height: 80,
 } as const;
 
