@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Database, Clock, Filter, Hash } from 'lucide-react';
+import { Database, Clock, Filter, Hash } from 'lucide-react';
 import { ExplainPlanListResponse, ExplainPlan } from '../types/api';
 import { QueryInformation } from '../components/QueryInformation';
 import { QueryPlanVisualization } from '../components/QueryPlanVisualization';
@@ -12,8 +12,6 @@ export function PlanVisualizationPage() {
     const [instances, setInstances] = useState<string[]>([]);
     const [selectedPlan, setSelectedPlan] = useState<ExplainPlan | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [startDate, setStartDate] = useState<string>('');
-    const [endDate, setEndDate] = useState<string>('');
 
     const fetchPlans = async () => {
         try {
@@ -22,12 +20,6 @@ export function PlanVisualizationPage() {
 
             if (selectedInstance) {
                 url += `&instance=${encodeURIComponent(selectedInstance)}`;
-            }
-            if (startDate) {
-                url += `&start_date=${encodeURIComponent(startDate)}`;
-            }
-            if (endDate) {
-                url += `&end_date=${encodeURIComponent(endDate)}`;
             }
 
             const response = await fetch(url);
@@ -53,7 +45,7 @@ export function PlanVisualizationPage() {
 
     useEffect(() => {
         fetchPlans();
-    }, [selectedInstance, currentPage, startDate, endDate]);
+    }, [selectedInstance, currentPage]);
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleString('ko-KR', {
@@ -105,25 +97,7 @@ export function PlanVisualizationPage() {
                         <h3 className="text-lg font-medium leading-6 text-gray-900">
                             Recent Explain Plans
                         </h3>
-                        <div className="flex items-center gap-4">
-                            {/* 날짜 필터 */}
-                            <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-gray-500" />
-                                <input
-                                    type="date"
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    className="block rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                />
-                                <span className="text-gray-500">~</span>
-                                <input
-                                    type="date"
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    className="block rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                />
-                            </div>
-
+                        <div className="flex items-center">
                             {/* 인스턴스 필터 */}
                             <div className="flex items-center gap-2">
                                 <Filter className="w-4 h-4 text-gray-500" />
@@ -141,6 +115,7 @@ export function PlanVisualizationPage() {
                         </div>
                     </div>
 
+                    {/* 테이블과 페이지네이션은 이전과 동일 */}
                     {loading ? (
                         <div className="animate-pulse space-y-4">
                             {[...Array(5)].map((_, i) => (
@@ -175,28 +150,25 @@ export function PlanVisualizationPage() {
                                             onClick={() => setSelectedPlan(plan)}
                                         >
                                             <td className="px-2 py-2 whitespace-nowrap text-sm">
-                                                <span className="flex items-center">
-                                                    <Calendar className="w-4 h-4 mr-1 flex-shrink-0"/>
-                                                    {formatDate(plan.created_at)}
-                                                </span>
+                                                {formatDate(plan.created_at)}
                                             </td>
                                             <td className="px-2 py-2 whitespace-nowrap text-sm">
-                                                <span className="flex items-center">
-                                                    <Hash className="w-4 h-4 mr-1 flex-shrink-0"/>
-                                                    {plan.pid}
-                                                </span>
+                                                    <span className="flex items-center">
+                                                        <Hash className="w-4 h-4 mr-1 flex-shrink-0"/>
+                                                        {plan.pid}
+                                                    </span>
                                             </td>
                                             <td className="px-2 py-2 whitespace-nowrap text-sm">
-                                                <span className="flex items-center">
-                                                    <Database className="w-4 h-4 mr-1 flex-shrink-0"/>
-                                                    {plan.instance}
-                                                </span>
+                                                    <span className="flex items-center">
+                                                        <Database className="w-4 h-4 mr-1 flex-shrink-0"/>
+                                                        {plan.instance}
+                                                    </span>
                                             </td>
                                             <td className="px-2 py-2 whitespace-nowrap text-sm">
-                                                <span className="flex items-center">
-                                                    <Clock className="w-4 h-4 mr-1 flex-shrink-0"/>
-                                                    {Math.round(plan.time)}s
-                                                </span>
+                                                    <span className="flex items-center">
+                                                        <Clock className="w-4 h-4 mr-1 flex-shrink-0"/>
+                                                        {Math.round(plan.time)}s
+                                                    </span>
                                             </td>
                                             <td className="px-2 py-2 text-sm">
                                                 <div className="truncate">
