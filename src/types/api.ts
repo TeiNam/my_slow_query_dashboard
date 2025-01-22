@@ -62,6 +62,9 @@ export interface RDSInstance {
   };
   InstanceCreateTime: string;
   updateTime: string;
+  Tags?: {
+    [key: string]: string;  // key-value 형태의 객체
+  };
 }
 
 export interface CollectRDSResponse {

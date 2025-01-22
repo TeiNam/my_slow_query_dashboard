@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Database, RefreshCw, Server, Clock } from 'lucide-react';
+import { Database, RefreshCw, Server, Clock, Check, X } from 'lucide-react';
 import { collectRDSInstances, getRDSInstances } from '../api/queries';
 import { RDSInstance, CollectRDSResponse } from '../types/api';
 
@@ -17,7 +17,6 @@ export function RDSInstanceList() {
             const data = await getRDSInstances();
             setInstances(data);
             if (data.length > 0) {
-                // 가장 최근 updateTime을 찾습니다
                 const latestUpdate = data.reduce((latest: string, current: RDSInstance) => {
                     return latest > current.updateTime ? latest : current.updateTime;
                 }, data[0].updateTime);
@@ -54,6 +53,18 @@ export function RDSInstanceList() {
         return new Date(dateString).toLocaleString('ko-KR', {
             timeZone: 'Asia/Seoul'
         });
+    };
+
+    // 실시간 태그 확인 함수 추가
+    const hasRealTimeTag = (instance: RDSInstance) => {
+        if (!instance.Tags) return false;
+
+        // Tags가 객체인 경우
+        if (typeof instance.Tags === 'object' && !Array.isArray(instance.Tags)) {
+            return (instance.Tags as Record<string, string>)['real_time_slow_sql'] === 'true';
+        }
+
+        return false;
     };
 
     return (
@@ -112,6 +123,9 @@ export function RDSInstanceList() {
                                     Instance ID
                                 </th>
                                 <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Real-time
+                                </th>
+                                <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Engine
                                 </th>
                                 <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -130,8 +144,21 @@ export function RDSInstanceList() {
                                 <tr key={instance.DBInstanceIdentifier} className="hover:bg-gray-50">
                                     <td className="px-3 py-2 whitespace-nowrap text-sm">
                                         <div className="flex items-center">
-                                            <Server className="w-4 h-4 mr-2 text-gray-500" />
+                                            <Server className="w-4 h-4 mr-2 text-gray-500"/>
                                             {instance.DBInstanceIdentifier}
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-2 whitespace-nowrap text-sm">
+                                        <div className="flex items-center justify-center">
+                                            {hasRealTimeTag(instance) ? (
+                                                <div className="p-1 bg-green-100 rounded-full">
+                                                    <Check className="w-4 h-4 text-green-600"/>
+                                                </div>
+                                            ) : (
+                                                <div className="p-1 bg-red-100 rounded-full">
+                                                    <X className="w-4 h-4 text-red-600"/>
+                                                </div>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap text-sm">
@@ -148,7 +175,7 @@ export function RDSInstanceList() {
                                     </td>
                                     <td className="px-3 py-2 whitespace-nowrap text-sm">
                                         <div className="flex items-center">
-                                            <Clock className="w-4 h-4 mr-2 text-gray-500" />
+                                            <Clock className="w-4 h-4 mr-2 text-gray-500"/>
                                             {formatDate(instance.InstanceCreateTime)}
                                         </div>
                                     </td>
