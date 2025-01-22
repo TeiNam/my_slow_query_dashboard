@@ -29,18 +29,18 @@ function App() {
                       MySQL Monitor
                     </Link>
                     <Link
-                        to="/cloudwatch"
-                        className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 hover:text-blue-600"
-                    >
-                      <CloudCog className="w-4 h-4 mr-2" />
-                      CloudWatch
-                    </Link>
-                    <Link
                         to="/plan"
                         className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 hover:text-blue-600"
                     >
                       <Share2 className="w-4 h-4 mr-2" />
                       Plan Visualization
+                    </Link>
+                    <Link
+                        to="/cloudwatch"
+                        className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 hover:text-blue-600"
+                    >
+                      <CloudCog className="w-4 h-4 mr-2" />
+                      CloudWatch
                     </Link>
                     <Link
                         to="/rds"
@@ -59,8 +59,8 @@ function App() {
             <Routes>
               <Route path="/" element={<MySQLMonitorPage />} />
               <Route path="/mysql" element={<MySQLMonitorPage />} />
-              <Route path="/cloudwatch" element={<CloudWatchPage />} />
               <Route path="/plan" element={<PlanVisualizationPage />} />
+              <Route path="/cloudwatch" element={<CloudWatchPage />} />
               <Route path="/rds" element={<RDSInstancePage />} />
             </Routes>
           </main>
