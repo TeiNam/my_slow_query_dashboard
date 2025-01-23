@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Database, User, Server, Copy, Check, Globe, Filter, Hash } from 'lucide-react';
+import React, {useEffect, useState} from 'react';
+import { Calendar, Clock, Database, User, Server, Copy, Check, Globe, Filter, Hash, X } from 'lucide-react';
 import { format } from 'sql-formatter';
 import { SlowQuery } from '../types/api';
 
@@ -39,7 +39,6 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
       const data = await response.json();
       setQueries(data);
 
-      // 쿼리 결과에서 고유한 인스턴스 목록 추출
       if (data.items && !selectedInstance) {
         const uniqueInstances = Array.from(new Set(data.items.map(item => item.instance))).sort();
         setInstances(uniqueInstances);
@@ -125,7 +124,6 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
               Slow Queries
             </h3>
             <div className="flex items-center gap-4">
-              {/* 인스턴스 필터 */}
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-gray-500" />
                 <select
@@ -140,7 +138,6 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                 </select>
               </div>
 
-              {/* 타임존 선택 */}
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-gray-500" />
                 <select
@@ -189,28 +186,28 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                           }}
                       >
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
-                      <span className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-1 flex-shrink-0"/>
-                        {formatDate(query.start)}
-                      </span>
+                          <span className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1 flex-shrink-0"/>
+                            {formatDate(query.start)}
+                          </span>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
-                      <span className="flex items-center">
-                        <Database className="w-4 h-4 mr-1 flex-shrink-0"/>
-                        {query.instance}
-                      </span>
+                          <span className="flex items-center">
+                            <Database className="w-4 h-4 mr-1 flex-shrink-0"/>
+                            {query.instance}
+                          </span>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
-                      <span className="flex items-center">
-                        <Server className="w-4 h-4 mr-1 flex-shrink-0"/>
-                        {query.db}
-                      </span>
+                          <span className="flex items-center">
+                            <Server className="w-4 h-4 mr-1 flex-shrink-0"/>
+                            {query.db}
+                          </span>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
-                      <span className="flex items-center">
-                        <User className="w-4 h-4 mr-1 flex-shrink-0"/>
-                        {query.user}@{query.host}
-                      </span>
+                          <span className="flex items-center">
+                            <User className="w-4 h-4 mr-1 flex-shrink-0"/>
+                            {query.user}@{query.host}
+                          </span>
                         </td>
                         <td
                             className="px-2 py-2 whitespace-nowrap text-sm cursor-pointer hover:text-blue-600"
@@ -219,43 +216,58 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                               onPidSelect(query.pid.toString());
                             }}
                         >
-                      <span className="flex items-center">
-                        <Hash className="w-4 h-4 mr-1 flex-shrink-0"/>
-                        {query.pid}
-                      </span>
+                          <span className="flex items-center">
+                            <Hash className="w-4 h-4 mr-1 flex-shrink-0"/>
+                            {query.pid}
+                          </span>
                         </td>
                         <td className="px-2 py-2 whitespace-nowrap text-sm">
-                      <span className="flex items-center">
-                        <Clock className="w-4 h-4 mr-1 flex-shrink-0"/>
-                        {Math.round(query.time)}s
-                      </span>
+                          <span className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1 flex-shrink-0"/>
+                            {Math.round(query.time)}s
+                          </span>
                         </td>
                         <td className="px-2 py-2 text-sm relative w-[500px] max-w-[500px] overflow-hidden">
                           <div className="truncate w-full">
                             {query.sql_text}
                           </div>
                           {selectedQuery?.pid === query.pid && (
-                              <div
-                                  className="fixed right-4 top-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg border border-gray-200 min-w-[600px] max-w-3xl z-[9999]">
-                                <div className="flex justify-between items-start mb-2">
-                                  <span
-                                      className="text-sm font-medium text-gray-700">SQL Query (PID: {query.pid})</span>
-                                  <button
-                                      onClick={(e) => handleCopyQuery(query.sql_text, e)}
-                                      className="p-1 hover:bg-gray-100 rounded-md transition-colors"
-                                      title="Copy SQL"
-                                  >
-                                    {copiedQuery === query.sql_text ? (
-                                        <Check className="w-4 h-4 text-green-500"/>
-                                    ) : (
-                                        <Copy className="w-4 h-4 text-gray-500"/>
-                                    )}
-                                  </button>
+                              <div className="fixed right-4 top-20 bg-white rounded-lg shadow-lg border border-gray-200 min-w-[600px] max-w-3xl z-[9999] max-h-[calc(100vh-160px)] flex flex-col">
+                                <div className="p-4 border-b border-gray-200">
+                                  <div className="flex justify-between items-center">
+        <span className="text-sm font-medium text-gray-700">
+          SQL Query (PID: {query.pid})
+        </span>
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                          onClick={(e) => handleCopyQuery(query.sql_text, e)}
+                                          className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+                                          title="Copy SQL"
+                                      >
+                                        {copiedQuery === query.sql_text ? (
+                                            <Check className="w-4 h-4 text-green-500"/>
+                                        ) : (
+                                            <Copy className="w-4 h-4 text-gray-500"/>
+                                        )}
+                                      </button>
+                                      <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedQuery(null);
+                                          }}
+                                          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                          title="Close"
+                                      >
+                                        <X className="w-4 h-4 text-gray-600" />
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
-                                <pre
-                                    className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-md overflow-x-auto">
-                            {formatSql(query.sql_text)}
-                          </pre>
+                                <div className="p-4 overflow-y-auto">
+      <pre className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-md">
+        {formatSql(query.sql_text)}
+      </pre>
+                                </div>
                               </div>
                           )}
                         </td>
@@ -264,7 +276,6 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                   </tbody>
                 </table>
 
-                {/* Pagination */}
                 <div className="mt-6">
                   <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
                     <div className="flex w-0 flex-1">

@@ -63,7 +63,7 @@ export interface RDSInstance {
   InstanceCreateTime: string;
   updateTime: string;
   Tags?: {
-    [key: string]: string;  // key-value 형태의 객체
+    [key: string]: string;
   };
 }
 
@@ -74,4 +74,30 @@ export interface CollectRDSResponse {
   details: {
     instance_ids: string[];
   };
+}
+
+// CloudWatch Slow Query Digest 관련 타입 수정
+export interface AvgStats {
+  avg_lock_time: number;
+  avg_rows_examined: number;
+  avg_rows_sent: number;
+  avg_time: number;
+}
+
+export interface SumStats {
+  execution_count: number;
+  total_time: number;
+}
+
+export interface QueryStat {
+  instance_id: string;
+  digest_query: string;
+  user: string;  // users 배열에서 단일 user 문자열로 변경
+  avg_stats: AvgStats;
+  sum_stats: SumStats;
+}
+
+export interface SlowQueryDigestResponse {
+  month: string;
+  stats: QueryStat[];
 }

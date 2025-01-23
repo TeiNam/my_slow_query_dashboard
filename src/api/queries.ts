@@ -53,3 +53,8 @@ export async function getRDSInstances() {
   const response = await fetch(`${API_BASE}/rds-instances`);
   return response.json();
 }
+
+export async function getSlowQueryStats() {
+  const response = await fetch(`${API_BASE}/cw-slowquery/digest/stats`);
+  return response.json();
+}
