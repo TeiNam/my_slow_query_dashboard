@@ -1,7 +1,12 @@
-const API_BASE = 'http://localhost:8000';  // /api/v1 제거
+import { getApiConfig } from '../config/api';
+
+async function getBaseUrl(): Promise<string> {
+  return getApiConfig().baseUrl;
+}
 
 export async function startCloudWatchCollection(targetDate?: string) {
-  const response = await fetch(`${API_BASE}/cloudwatch/run`, {
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/cloudwatch/run`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -12,49 +17,57 @@ export async function startCloudWatchCollection(targetDate?: string) {
 }
 
 export async function getCloudWatchStatus(targetDate: string) {
-  const response = await fetch(`${API_BASE}/cloudwatch/status/${targetDate}`);
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/cloudwatch/status/${targetDate}`);
   return response.json();
 }
 
 export async function startMySQLMonitoring() {
-  const response = await fetch(`${API_BASE}/mysql/start`, {
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/mysql/start`, {
     method: 'POST',
   });
   return response.json();
 }
 
 export async function stopMySQLMonitoring() {
-  const response = await fetch(`${API_BASE}/mysql/stop`, {
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/mysql/stop`, {
     method: 'POST',
   });
   return response.json();
 }
 
 export async function getMySQLStatus() {
-  const response = await fetch(`${API_BASE}/mysql/status`);
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/mysql/status`);
   return response.json();
 }
 
 export async function collectQueryExplain(pid: number) {
-  const response = await fetch(`${API_BASE}/mysql/explain/${pid}`, {
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/mysql/explain/${pid}`, {
     method: 'POST',
   });
   return response.json();
 }
 
 export async function collectRDSInstances() {
-  const response = await fetch(`${API_BASE}/collectors/rds-instances`, {
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/collectors/rds-instances`, {
     method: 'POST',
   });
   return response.json();
 }
 
 export async function getRDSInstances() {
-  const response = await fetch(`${API_BASE}/rds-instances`);
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/rds-instances`);
   return response.json();
 }
 
 export async function getSlowQueryStats() {
-  const response = await fetch(`${API_BASE}/cw-slowquery/digest/stats`);
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/cw-slowquery/digest/stats`);
   return response.json();
 }
