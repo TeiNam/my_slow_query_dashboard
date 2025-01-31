@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Database, Hash, Clock, FileJson, Copy, Check } from 'lucide-react';
 import { format } from 'sql-formatter';
 import { ExplainPlan } from '../types/api';

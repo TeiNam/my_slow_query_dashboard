@@ -1,4 +1,3 @@
-import React from 'react';
 import { Calendar } from 'lucide-react';
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format } from 'date-fns';

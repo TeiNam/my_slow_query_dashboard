@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { startMySQLMonitoring, stopMySQLMonitoring, getMySQLStatus } from '../api/queries';
 import { MonitorResponse } from '../types/api';
 import { Database, Activity } from 'lucide-react';

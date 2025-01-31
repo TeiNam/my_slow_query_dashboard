@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import { collectQueryExplain } from '../api/queries';
 import { ExplainResponse } from '../types/api';
 import { Search, CheckCircle2, Hash, Download, Microscope } from 'lucide-react';

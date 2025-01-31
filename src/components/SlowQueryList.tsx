@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import { Calendar, Clock, Database, User, Server, Copy, Check, Globe, Filter, Hash, X } from 'lucide-react';
 import { format } from 'sql-formatter';
 import { SlowQuery } from '../types/api';
@@ -40,8 +40,8 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
       setQueries(data);
 
       if (data.items && !selectedInstance) {
-        const uniqueInstances = Array.from(new Set(data.items.map(item => item.instance))).sort();
-        setInstances(uniqueInstances);
+        const uniqueInstances = Array.from(new Set(data.items.map((item: SlowQuery) => item.instance))).sort();
+        setInstances(uniqueInstances as string[]);
       }
 
       setError(null);
@@ -52,7 +52,6 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchQueries();
   }, [currentPage, selectedInstance]);

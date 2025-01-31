@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Database, RefreshCw, Server, Clock, Check, X } from 'lucide-react';
 import { collectRDSInstances, getRDSInstances } from '../api/queries';
 import { RDSInstance, CollectRDSResponse } from '../types/api';

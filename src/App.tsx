@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Database, CloudCog, Share2, Server } from 'lucide-react';
 import { MySQLMonitorPage } from './pages/MySQLMonitorPage';
