@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Database, Clock, Filter, Hash } from 'lucide-react';
 import { ExplainPlanListResponse, ExplainPlan } from '../types/api';
 import { QueryInformation } from '../components/QueryInformation';
@@ -17,7 +17,8 @@ export function PlanVisualizationPage() {
     const fetchPlans = async () => {
         try {
             setLoading(true);
-            let url = `http://localhost:8000/explain/plans?page=${currentPage}&page_size=5`;
+            const baseUrl = import.meta.env.VITE_API_BASE_URL;
+            let url = `${baseUrl}/explain/plans?page=${currentPage}&page_size=5`;
 
             if (selectedInstance) {
                 url += `&instance=${encodeURIComponent(selectedInstance)}`;
@@ -116,7 +117,6 @@ export function PlanVisualizationPage() {
                         </div>
                     </div>
 
-                    {/* 테이블과 페이지네이션은 이전과 동일 */}
                     {loading ? (
                         <div className="animate-pulse space-y-4">
                             {[...Array(5)].map((_, i) => (
@@ -191,7 +191,7 @@ export function PlanVisualizationPage() {
                                             disabled={currentPage === 1}
                                             className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 disabled:opacity-50"
                                         >
-                                            {'<<'}
+                                            {' <<'}
                                         </button>
                                         <button
                                             onClick={() => setCurrentPage(currentPage - 1)}

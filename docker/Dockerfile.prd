@@ -1,0 +1,44 @@
+# Build stage
+FROM node:20-slim AS builder
+
+# Set timezone
+ENV TZ=Asia/Seoul
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build application
+RUN npm run build
+
+# Production stage
+FROM node:20-slim
+
+# Set timezone
+ENV TZ=Asia/Seoul
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+WORKDIR /app
+
+# Copy package files for production
+COPY package.json package-lock.json ./
+
+# Install only production dependencies
+RUN npm ci --omit=dev
+
+# Copy built files from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Expose port for preview server
+EXPOSE 4173
+
+# Start the application in preview mode
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0"]

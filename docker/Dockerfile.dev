@@ -1,0 +1,22 @@
+FROM node:20-slim
+
+# Set timezone
+ENV TZ=Asia/Seoul
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies including devDependencies
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Expose port for development server
+EXPOSE 5173
+
+# Start the development server with host setting for docker
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

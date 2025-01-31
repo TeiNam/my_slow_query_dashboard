@@ -28,7 +28,8 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
   const fetchQueries = async () => {
     try {
       setLoading(true);
-      let url = `http://localhost:8000/mysql/queries?page=${currentPage}&page_size=20`;
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      let url = `${baseUrl}/mysql/queries?page=${currentPage}&page_size=20`;
 
       if (selectedInstance) {
         url += `&instance=${selectedInstance}`;
@@ -52,6 +53,7 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchQueries();
   }, [currentPage, selectedInstance]);
@@ -234,9 +236,9 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                               <div className="fixed right-4 top-20 bg-white rounded-lg shadow-lg border border-gray-200 min-w-[600px] max-w-3xl z-[9999] max-h-[calc(100vh-160px)] flex flex-col">
                                 <div className="p-4 border-b border-gray-200">
                                   <div className="flex justify-between items-center">
-        <span className="text-sm font-medium text-gray-700">
-          SQL Query (PID: {query.pid})
-        </span>
+                                    <span className="text-sm font-medium text-gray-700">
+                                      SQL Query (PID: {query.pid})
+                                    </span>
                                     <div className="flex items-center gap-2">
                                       <button
                                           onClick={(e) => handleCopyQuery(query.sql_text, e)}
@@ -263,9 +265,9 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                                   </div>
                                 </div>
                                 <div className="p-4 overflow-y-auto">
-      <pre className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-md">
-        {formatSql(query.sql_text)}
-      </pre>
+                                  <pre className="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded-md">
+                                    {formatSql(query.sql_text)}
+                                  </pre>
                                 </div>
                               </div>
                           )}

@@ -38,7 +38,8 @@ export function QueryExplain({ selectedPid }: QueryExplainProps) {
     if (!pid) return;
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/mysql/explain/${pid}/markdown`);
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const response = await fetch(`${baseUrl}/mysql/explain/${pid}/markdown`);
       if (!response.ok) {
         throw new Error('Failed to download markdown');
       }
