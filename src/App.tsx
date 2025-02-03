@@ -4,6 +4,8 @@ import { MySQLMonitorPage } from './pages/MySQLMonitorPage';
 import { CloudWatchPage } from './pages/CloudWatchPage';
 import { PlanVisualizationPage } from './pages/PlanVisualizationPage';
 import { RDSInstancePage } from './pages/RDSInstancePage';
+import { useState, useEffect } from 'react';
+import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts';
 
 const futureFlags = {
   v7_startTransition: true,  // React.startTransition 적용 (경고 제거)
@@ -11,6 +13,28 @@ const futureFlags = {
 };
 
 function App() {
+  const [awsAccount, setAwsAccount] = useState<string | null>(null);
+  const [awsRegion, setAwsRegion] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAWSInfo = async () => {
+      try {
+        const stsClient = new STSClient({});
+        const command = new GetCallerIdentityCommand({});
+        const data = await stsClient.send(command);
+        setAwsAccount(data.Account);
+
+        // 현재 리전 정보 가져오기
+        const region = window.location.hostname.split('.')[0]; // 예시로 리전 추출
+        setAwsRegion(region);
+      } catch (error) {
+        console.error('Failed to fetch AWS info:', error);
+      }
+    };
+
+    fetchAWSInfo();
+  }, []);
+
   return (
       <Router future={futureFlags}>
         <div className="min-h-screen bg-gray-100">
@@ -54,6 +78,17 @@ function App() {
                       RDS Instances
                     </Link>
                   </div>
+                </div>
+
+                {/* AWS 계정 및 리전 정보 표시 */}
+                <div className="flex items-center text-sm text-gray-600">
+                  {awsAccount && awsRegion ? (
+                      <span className="ml-4">
+                    AWS Account: {awsAccount} | Region: {awsRegion}
+                  </span>
+                  ) : (
+                      <span className="ml-4">Loading AWS Info...</span>
+                  )}
                 </div>
               </div>
             </div>
