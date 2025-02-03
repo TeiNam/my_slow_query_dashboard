@@ -6,15 +6,23 @@ import { initializeApiConfig } from './config/api';
 
 async function initialize() {
     try {
+        console.log("🔄 Initializing API config...");
         await initializeApiConfig();
+        console.log("✅ API config initialized successfully");
 
-        createRoot(document.getElementById('root')!).render(
+        const rootElement = document.getElementById('root');
+        if (!rootElement) {
+            console.error("❌ Root element not found");
+            return;
+        }
+
+        createRoot(rootElement).render(
             <StrictMode>
                 <App />
             </StrictMode>
         );
     } catch (error) {
-        console.error('Failed to initialize application:', error);
+        console.error('🔥 Firefox load failed:', error);
     }
 }
 

@@ -5,9 +5,14 @@ import { CloudWatchPage } from './pages/CloudWatchPage';
 import { PlanVisualizationPage } from './pages/PlanVisualizationPage';
 import { RDSInstancePage } from './pages/RDSInstancePage';
 
+const futureFlags = {
+  v7_startTransition: true,  // React.startTransition 적용 (경고 제거)
+  v7_relativeSplatPath: true // Splat 경로 변경 적용 (경고 제거)
+};
+
 function App() {
   return (
-      <Router>
+      <Router future={futureFlags}>
         <div className="min-h-screen bg-gray-100">
           <nav className="bg-white shadow-md">
             <div className="max-w-[80%] mx-auto px-4">
