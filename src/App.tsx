@@ -5,7 +5,6 @@ import { CloudWatchPage } from './pages/CloudWatchPage';
 import { PlanVisualizationPage } from './pages/PlanVisualizationPage';
 import { RDSInstancePage } from './pages/RDSInstancePage';
 import { useState, useEffect } from 'react';
-import { STSClient, GetCallerIdentityCommand } from '@aws-sdk/client-sts';
 
 const futureFlags = {
   v7_startTransition: true,  // React.startTransition 적용 (경고 제거)
@@ -18,40 +17,12 @@ function App() {
   const [awsRegion, setAwsRegion] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchAWSInfo = async () => {
-      try {
-        // 기본 리전 설정
-        let region = 'ap-northeast-2';
-        const hostname = window.location.hostname;
+    // .env에서 직접 값을 가져옴
+    const region = import.meta.env.VITE_AWS_REGION || 'ap-northeast-2';
+    const account = import.meta.env.VITE_AWS_ACCOUNT || 'development';
 
-        // 로컬 환경이 아닌 경우, hostname을 통해 리전 정보를 추출 (예: 'ap-northeast-1.example.com')
-        if (!hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
-          const hostParts = hostname.split('.');
-          if (hostParts[0].includes('-')) {
-            region = hostParts[0];
-          }
-        }
-
-        // AWS STS 클라이언트를 생성하여 호출자 정보를 요청
-        const stsClient = new STSClient({ region });
-        const command = new GetCallerIdentityCommand({});
-        const data = await stsClient.send(command);
-
-        if (data.Account) {
-          setAwsAccount(data.Account);
-          setAwsRegion(region);
-        }
-      } catch (error) {
-        console.error('AWS 자격 증명을 찾을 수 없습니다:', error);
-        // 로컬 개발 환경이라면 기본값을 설정
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-          setAwsAccount('local-development');
-          setAwsRegion('ap-northeast-2');
-        }
-      }
-    };
-
-    fetchAWSInfo();
+    setAwsRegion(region);
+    setAwsAccount(account);
   }, []);
 
   return (
@@ -103,8 +74,8 @@ function App() {
                 <div className="flex items-center text-sm text-gray-600 text-right mr-8">
                   {awsAccount && awsRegion ? (
                       <span>
-                    <strong>AWS Account:</strong> {awsAccount} || <strong>Region:</strong> {awsRegion}
-                  </span>
+                       <strong>AWS Account:</strong> {awsAccount} || <strong>Region:</strong> {awsRegion}
+                     </span>
                   ) : (
                       <span>Loading AWS Info...</span>
                   )}
