@@ -5,7 +5,7 @@ import { RDSInstance, CollectRDSResponse } from '../types/api';
 
 export function RDSInstanceList() {
     const [instances, setInstances] = useState<RDSInstance[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [collecting, setCollecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [collectResponse, setCollectResponse] = useState<CollectRDSResponse | null>(null);
@@ -15,17 +15,23 @@ export function RDSInstanceList() {
         try {
             setLoading(true);
             const data = await getRDSInstances();
-            setInstances(data);
-            if (data.length > 0) {
-                const latestUpdate = data.reduce((latest: string, current: RDSInstance) => {
-                    return latest > current.updateTime ? latest : current.updateTime;
-                }, data[0].updateTime);
-                setLastUpdateTime(latestUpdate);
+            if (Array.isArray(data)) {
+                setInstances(data);
+                if (data.length > 0) {
+                    const latestUpdate = data.reduce((latest: string, current: RDSInstance) => {
+                        return latest > current.updateTime ? latest : current.updateTime;
+                    }, data[0].updateTime);
+                    setLastUpdateTime(latestUpdate);
+                }
+                setError(null);
+            } else {
+                setInstances([]);
+                setError('데이터 형식이 올바르지 않습니다.');
             }
-            setError(null);
         } catch (err) {
-            setError('인스턴스 목록을 가져오는데 실패했습니다.');
             console.error('Error fetching instances:', err);
+            setError(err instanceof Error ? err.message : '인스턴스 목록을 가져오는데 실패했습니다.');
+            setInstances([]);
         } finally {
             setLoading(false);
         }
@@ -55,16 +61,134 @@ export function RDSInstanceList() {
         });
     };
 
-    // 실시간 태그 확인 함수 추가
     const hasRealTimeTag = (instance: RDSInstance) => {
         if (!instance.Tags) return false;
-
-        // Tags가 객체인 경우
         if (typeof instance.Tags === 'object' && !Array.isArray(instance.Tags)) {
             return (instance.Tags as Record<string, string>)['real_time_slow_sql'] === 'true';
         }
-
         return false;
+    };
+
+    const renderContent = () => {
+        if (loading) {
+            return (
+                <div className="animate-pulse space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="h-16 bg-gray-200 rounded" />
+                    ))}
+                </div>
+            );
+        }
+
+        if (error) {
+            return (
+                <div className="text-center py-8">
+                    <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+                        {error}
+                    </div>
+                    <button
+                        onClick={fetchInstances}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                    >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        다시 시도
+                    </button>
+                </div>
+            );
+        }
+
+        if (!instances.length) {
+            return (
+                <div className="text-center py-8">
+                    <Server className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">RDS 인스턴스 없음</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                        현재 등록된 RDS 인스턴스가 없습니다.
+                    </p>
+                    <div className="mt-6">
+                        <button
+                            onClick={handleCollect}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+                        >
+                            <RefreshCw className={`w-4 h-4 mr-2 ${collecting ? 'animate-spin' : ''}`} />
+                            인스턴스 수집
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead>
+                    <tr>
+                        <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Instance ID
+                        </th>
+                        <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Real-time
+                        </th>
+                        <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Engine
+                        </th>
+                        <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Version
+                        </th>
+                        <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Endpoint
+                        </th>
+                        <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Created At
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                    {instances.map((instance) => (
+                        <tr key={instance.DBInstanceIdentifier} className="hover:bg-gray-50">
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                                <div className="flex items-center">
+                                    <Server className="w-4 h-4 mr-2 text-gray-500"/>
+                                    {instance.DBInstanceIdentifier}
+                                </div>
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                                <div className="flex items-center">  {/* justify-center 제거 */}
+                                    {hasRealTimeTag(instance) ? (
+                                        <div className="p-1 bg-green-100 rounded-full">
+                                            <Check className="w-4 h-4 text-green-600"/>
+                                        </div>
+                                    ) : (
+                                        <div className="p-1 bg-red-100 rounded-full">
+                                            <X className="w-4 h-4 text-red-600"/>
+                                        </div>
+                                    )}
+                                </div>
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                                {instance.Engine}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                                {instance.EngineVersion}
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                                {instance.Endpoint
+                                    ? `${instance.Endpoint.Address}:${instance.Endpoint.Port}`
+                                    : '-'
+                                }
+                            </td>
+                            <td className="px-3 py-2 whitespace-nowrap text-sm">
+                                <div className="flex items-center">
+                                    <Clock className="w-4 h-4 mr-2 text-gray-500"/>
+                                    {formatDate(instance.InstanceCreateTime)}
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
+        );
     };
 
     return (
@@ -102,89 +226,7 @@ export function RDSInstanceList() {
                     </div>
                 )}
 
-                {error && (
-                    <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
-                        {error}
-                    </div>
-                )}
-
-                {loading ? (
-                    <div className="animate-pulse space-y-4">
-                        {[...Array(3)].map((_, i) => (
-                            <div key={i} className="h-16 bg-gray-200 rounded"></div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead>
-                            <tr>
-                                <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Instance ID
-                                </th>
-                                <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Real-time
-                                </th>
-                                <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Engine
-                                </th>
-                                <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Version
-                                </th>
-                                <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Endpoint
-                                </th>
-                                <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Created At
-                                </th>
-                            </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                            {instances.map((instance) => (
-                                <tr key={instance.DBInstanceIdentifier} className="hover:bg-gray-50">
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                                        <div className="flex items-center">
-                                            <Server className="w-4 h-4 mr-2 text-gray-500"/>
-                                            {instance.DBInstanceIdentifier}
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                                        <div className="flex items-center justify-center">
-                                            {hasRealTimeTag(instance) ? (
-                                                <div className="p-1 bg-green-100 rounded-full">
-                                                    <Check className="w-4 h-4 text-green-600"/>
-                                                </div>
-                                            ) : (
-                                                <div className="p-1 bg-red-100 rounded-full">
-                                                    <X className="w-4 h-4 text-red-600"/>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                                        {instance.Engine}
-                                    </td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                                        {instance.EngineVersion}
-                                    </td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                                        {instance.Endpoint
-                                            ? `${instance.Endpoint.Address}:${instance.Endpoint.Port}`
-                                            : '-'
-                                        }
-                                    </td>
-                                    <td className="px-3 py-2 whitespace-nowrap text-sm">
-                                        <div className="flex items-center">
-                                            <Clock className="w-4 h-4 mr-2 text-gray-500"/>
-                                            {formatDate(instance.InstanceCreateTime)}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+                {renderContent()}
             </div>
         </div>
     );

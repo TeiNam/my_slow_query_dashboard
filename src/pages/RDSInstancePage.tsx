@@ -1,4 +1,3 @@
-import React from 'react';
 import { RDSInstanceList } from '../components/RDSInstanceList';
 
 export function RDSInstancePage() {
