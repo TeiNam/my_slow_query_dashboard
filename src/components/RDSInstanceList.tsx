@@ -2,6 +2,19 @@ import { useState, useEffect } from 'react';
 import { Database, RefreshCw, Server, Clock, Check, X } from 'lucide-react';
 import { collectRDSInstances, getRDSInstances } from '../api/queries';
 import { RDSInstance, CollectRDSResponse } from '../types/api';
+import { useCallback } from 'react';
+
+// 디바운스 유틸리티 함수
+function debounce<T extends (...args: any[]) => any>(
+    func: T,
+    wait: number
+): (...args: Parameters<T>) => void {
+    let timeout: NodeJS.Timeout;
+    return (...args: Parameters<T>) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), wait);
+    };
+}
 
 export function RDSInstanceList() {
     const [instances, setInstances] = useState<RDSInstance[]>([]);
@@ -11,31 +24,50 @@ export function RDSInstanceList() {
     const [collectResponse, setCollectResponse] = useState<CollectRDSResponse | null>(null);
     const [lastUpdateTime, setLastUpdateTime] = useState<string | null>(null);
 
-    const fetchInstances = async () => {
+    const [retryCount, setRetryCount] = useState(0);
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 1000; // 1초
+
+    const fetchInstances = useCallback(async () => {
         try {
             setLoading(true);
+            setError(null);
+
             const data = await getRDSInstances();
-            if (Array.isArray(data)) {
-                setInstances(data);
-                if (data.length > 0) {
-                    const latestUpdate = data.reduce((latest: string, current: RDSInstance) => {
-                        return latest > current.updateTime ? latest : current.updateTime;
-                    }, data[0].updateTime);
-                    setLastUpdateTime(latestUpdate);
-                }
-                setError(null);
-            } else {
-                setInstances([]);
-                setError('데이터 형식이 올바르지 않습니다.');
+            setInstances(data);
+            if (data.length > 0) {
+                const latestUpdate = data.reduce((latest: string, current: RDSInstance) => {
+                    return latest > current.updateTime ? latest : current.updateTime;
+                }, data[0].updateTime);
+                setLastUpdateTime(latestUpdate);
             }
+            setRetryCount(0); // 성공시 재시도 카운트 초기화
         } catch (err) {
             console.error('Error fetching instances:', err);
-            setError(err instanceof Error ? err.message : '인스턴스 목록을 가져오는데 실패했습니다.');
+            const errorMessage = err instanceof Error ? err.message : '인스턴스 목록을 가져오는데 실패했습니다.';
+
+            // 재시도 로직
+            if (retryCount < MAX_RETRIES) {
+                setRetryCount(prev => prev + 1);
+                setTimeout(() => {
+                    fetchInstances();
+                }, RETRY_DELAY);
+                return;
+            }
+
+            setError(errorMessage);
             setInstances([]);
+            setLastUpdateTime(null);
         } finally {
             setLoading(false);
         }
-    };
+    }, [retryCount]);
+
+    // 새로고침용 디바운스 함수
+    const debouncedRefresh = useCallback(
+        debounce(() => fetchInstances(), 1000),
+        [fetchInstances]
+    );
 
     const handleCollect = async () => {
         try {
@@ -52,6 +84,7 @@ export function RDSInstanceList() {
     };
 
     useEffect(() => {
+        // 초기 로딩은 즉시 실행
         fetchInstances();
     }, []);
 
@@ -86,8 +119,12 @@ export function RDSInstanceList() {
                     <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
                         {error}
                     </div>
+                    <p className="text-sm text-gray-500 mb-4">
+                        {retryCount > 0 && retryCount < MAX_RETRIES ?
+                            `재시도 중... (${retryCount}/${MAX_RETRIES})` : ''}
+                    </p>
                     <button
-                        onClick={fetchInstances}
+                        onClick={debouncedRefresh}
                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
                     >
                         <RefreshCw className="w-4 h-4 mr-2" />
@@ -209,7 +246,7 @@ export function RDSInstanceList() {
                     </div>
                     <button
                         onClick={handleCollect}
-                        disabled={collecting}
+                        disabled={collecting || loading}
                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                     >
                         <RefreshCw className={`w-4 h-4 mr-2 ${collecting ? 'animate-spin' : ''}`} />
