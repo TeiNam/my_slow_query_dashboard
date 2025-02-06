@@ -13,15 +13,18 @@ const futureFlags = {
 };
 
 function App() {
+  // AWS 정보를 저장할 상태 변수
   const [awsAccount, setAwsAccount] = useState<string | null>(null);
   const [awsRegion, setAwsRegion] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAWSInfo = async () => {
       try {
-        // 호스트네임에서 리전 추출 시도
-        let region = 'ap-northeast-2';  // 기본값
+        // 기본 리전 설정
+        let region = 'ap-northeast-2';
         const hostname = window.location.hostname;
+
+        // 로컬 환경이 아닌 경우, hostname을 통해 리전 정보를 추출 (예: 'ap-northeast-1.example.com')
         if (!hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
           const hostParts = hostname.split('.');
           if (hostParts[0].includes('-')) {
@@ -29,18 +32,19 @@ function App() {
           }
         }
 
+        // AWS STS 클라이언트를 생성하여 호출자 정보를 요청
         const stsClient = new STSClient({ region });
-
         const command = new GetCallerIdentityCommand({});
         const data = await stsClient.send(command);
+
         if (data.Account) {
           setAwsAccount(data.Account);
           setAwsRegion(region);
         }
       } catch (error) {
         console.error('AWS 자격 증명을 찾을 수 없습니다:', error);
-        // 로컬 개발 환경에서는 기본값 설정
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // 로컬 개발 환경이라면 기본값을 설정
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
           setAwsAccount('local-development');
           setAwsRegion('ap-northeast-2');
         }
@@ -95,6 +99,7 @@ function App() {
                   </div>
                 </div>
 
+                {/* 우측 상단에 동적으로 AWS 정보 표시 */}
                 <div className="flex items-center text-sm text-gray-600 text-right mr-8">
                   {awsAccount && awsRegion ? (
                       <span>
