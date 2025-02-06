@@ -55,7 +55,7 @@ function App() {
                 <div className="flex">
                   <div className="flex-shrink-0 flex items-center">
                     <div className="flex items-center gap-2">
-                      <img src="/public/mysql.svg" alt="MySQL Logo" className="w-6 h-6" />
+                      <img src="/mysql.svg" alt="MySQL Logo" className="w-6 h-6" />
                       <h1 className="text-xl font-bold text-gray-900">MySQL Query Monitor</h1>
                     </div>
                   </div>
