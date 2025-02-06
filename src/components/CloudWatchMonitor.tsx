@@ -45,9 +45,9 @@ export function CloudWatchMonitor() {
   const wsRef = useRef<WebSocket | null>(null);
   const logsEndRef = useRef<HTMLDivElement>(null);
 
-  // 상수
-  const WS_BASE_URL = 'ws://localhost:8000/ws/collection';
-  const API_BASE_URL = 'http://localhost:8000/cloudwatch/run';
+  // API URL 설정
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  const WS_BASE_URL = API_BASE_URL.replace('http', 'ws') + '/ws/collection';
 
   // 로그 스크롤
   useEffect(() => {
