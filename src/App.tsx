@@ -19,27 +19,31 @@ function App() {
   useEffect(() => {
     const fetchAWSInfo = async () => {
       try {
-        const stsClient = new STSClient({});
+        // 호스트네임에서 리전 추출 시도
+        let region = 'ap-northeast-2';  // 기본값
+        const hostname = window.location.hostname;
+        if (!hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
+          const hostParts = hostname.split('.');
+          if (hostParts[0].includes('-')) {
+            region = hostParts[0];
+          }
+        }
+
+        const stsClient = new STSClient({ region });
+
         const command = new GetCallerIdentityCommand({});
         const data = await stsClient.send(command);
         if (data.Account) {
           setAwsAccount(data.Account);
+          setAwsRegion(region);
         }
       } catch (error) {
-        console.error('AWS 정보를 가져오는데 실패했습니다:', error);
-        // 로컬 환경에서 AWS 정보를 불러오지 못할 경우 임의의 값을 설정합니다.
+        console.error('AWS 자격 증명을 찾을 수 없습니다:', error);
+        // 로컬 개발 환경에서는 기본값 설정
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          console.warn('로컬 개발 환경 감지: 임의의 AWS Account 값을 설정합니다.');
-          setAwsAccount('488659748805');  // 예시: 임의의 AWS Account ID
+          setAwsAccount('local-development');
+          setAwsRegion('ap-northeast-2');
         }
-      }
-
-      // AWS 리전 정보 설정
-      const hostnamePart = window.location.hostname.split('.')[0];
-      if (hostnamePart === 'localhost' || hostnamePart === '127') {
-        setAwsRegion('ap-northeast-2');  // 예시: 임의의 리전 값
-      } else {
-        setAwsRegion(hostnamePart);
       }
     };
 
