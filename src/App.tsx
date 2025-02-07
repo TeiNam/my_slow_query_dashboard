@@ -4,7 +4,6 @@ import { MySQLMonitorPage } from './pages/MySQLMonitorPage';
 import { CloudWatchPage } from './pages/CloudWatchPage';
 import { PlanVisualizationPage } from './pages/PlanVisualizationPage';
 import { RDSInstancePage } from './pages/RDSInstancePage';
-import { useState, useEffect } from 'react';
 
 const futureFlags = {
   v7_startTransition: true,  // React.startTransition 적용 (경고 제거)
@@ -12,18 +11,8 @@ const futureFlags = {
 };
 
 function App() {
-  // AWS 정보를 저장할 상태 변수
-  const [awsAccount, setAwsAccount] = useState<string | null>(null);
-  const [awsRegion, setAwsRegion] = useState<string | null>(null);
-
-  useEffect(() => {
-    // .env에서 직접 값을 가져옴
-    const region = import.meta.env.VITE_AWS_REGION || 'ap-northeast-2';
-    const account = import.meta.env.VITE_AWS_ACCOUNT || 'development';
-
-    setAwsRegion(region);
-    setAwsAccount(account);
-  }, []);
+  const awsAccount = import.meta.env.VITE_AWS_ACCOUNT || 'Localhost' ;
+  const awsRegion = import.meta.env.VITE_AWS_REGION || 'Development';
 
   return (
       <Router future={futureFlags}>
@@ -70,15 +59,10 @@ function App() {
                   </div>
                 </div>
 
-                {/* 우측 상단에 동적으로 AWS 정보 표시 */}
                 <div className="flex items-center text-sm text-gray-600 text-right mr-8">
-                  {awsAccount && awsRegion ? (
-                      <span>
-                       <strong>AWS Account:</strong> {awsAccount} || <strong>Region:</strong> {awsRegion}
-                     </span>
-                  ) : (
-                      <span>Loading AWS Info...</span>
-                  )}
+                  <span>
+                    <strong>AWS Account:</strong> {awsAccount} || <strong>Region:</strong> {awsRegion}
+                  </span>
                 </div>
               </div>
             </div>
