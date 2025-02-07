@@ -11,7 +11,7 @@ const futureFlags = {
 };
 
 function App() {
-  const awsAccount = import.meta.env.VITE_AWS_ACCOUNT || 'Localhost' ;
+  const awsAccount = import.meta.env.VITE_AWS_ACCOUNT || 'Localhost';
   const awsRegion = import.meta.env.VITE_AWS_REGION || 'Development';
 
   return (
