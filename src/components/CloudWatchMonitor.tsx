@@ -230,7 +230,7 @@ export function CloudWatchMonitor() {
   };
 
   return (
-      <div className="space-y-6 p-6 bg-white rounded-lg shadow-md w-full">
+      <div className="space-y-6 p-6 bg-white rounded-lg shadow-md">
         <div className="flex items-center gap-2 border-b pb-4">
           <Calendar className="w-6 h-6 text-blue-500" />
           <h2 className="text-2xl font-bold">CloudWatch Slow Query Monitor</h2>

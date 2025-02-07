@@ -118,7 +118,7 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
   }
 
   return (
-      <div className="bg-white rounded-lg shadow w-full">
+      <div className="bg-white rounded-lg shadow">
         <div className="px-4 py-5 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium leading-6 text-gray-900">

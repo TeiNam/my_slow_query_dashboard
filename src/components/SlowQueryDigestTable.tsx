@@ -60,7 +60,7 @@ export function SlowQueryDigestTable({ stats, month }: SlowQueryDigestTableProps
     };
 
     return (
-        <div className="mt-8 bg-white rounded-lg shadow w-full">
+        <div className="mt-8 bg-white rounded-lg shadow">
             <div className="px-4 py-5 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-medium leading-6 text-gray-900 flex items-center gap-2">
