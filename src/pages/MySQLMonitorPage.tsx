@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { MySQLMonitor } from '../components/MySQLMonitor';
 import { QueryExplain } from '../components/QueryExplain';
 import { SlowQueryList } from '../components/SlowQueryList';

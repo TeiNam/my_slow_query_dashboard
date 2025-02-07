@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { CloudWatchMonitor } from '../components/CloudWatchMonitor';
 import { SlowQueryDigestTable } from '../components/SlowQueryDigestTable';
 import { getSlowQueryStats } from '../api/queries';
