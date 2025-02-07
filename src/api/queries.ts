@@ -11,7 +11,7 @@ async function getBaseUrl(): Promise<string> {
 
 export async function getAWSInfo(): Promise<AWSInfo> {
   const baseUrl = await getBaseUrl();
-  const response = await fetch(`${baseUrl}/aws-info`);
+  const response = await fetch(`${baseUrl}/aws/info`);
   if (!response.ok) {
     throw new Error('Failed to fetch AWS info');
   }

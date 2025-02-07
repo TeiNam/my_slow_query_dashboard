@@ -4,7 +4,7 @@ import { MySQLMonitorPage } from './pages/MySQLMonitorPage';
 import { CloudWatchPage } from './pages/CloudWatchPage';
 import { PlanVisualizationPage } from './pages/PlanVisualizationPage';
 import { RDSInstancePage } from './pages/RDSInstancePage';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAWSInfo } from './api/queries';
 
 const futureFlags = {
@@ -16,20 +16,20 @@ function App() {
   const [awsAccount, setAwsAccount] = useState<string | null>(null);
   const [awsRegion, setAwsRegion] = useState<string | null>(null);
 
+  const fetchAWSInfo = useCallback(async () => {
+    try {
+      const awsInfo = await getAWSInfo();
+      setAwsAccount(awsInfo.account);
+      setAwsRegion(awsInfo.region);
+    } catch (err) {
+      console.error('AWS 정보를 가져오는데 실패했습니다:', err);
+    }
+  }, []);
+
   // AWS 정보를 컴포넌트 마운트 시 한 번만 불러옵니다.
   useEffect(() => {
-    const fetchAWSInfo = async () => {
-      try {
-        const awsInfo = await getAWSInfo();
-        setAwsAccount(awsInfo.account);
-        setAwsRegion(awsInfo.region);
-      } catch (err) {
-        console.error('AWS 정보를 가져오는데 실패했습니다:', err);
-      }
-    };
-
     fetchAWSInfo();
-  }, []);
+  }, [fetchAWSInfo]);
 
   return (
       <Router future={futureFlags}>

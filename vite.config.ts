@@ -11,6 +11,11 @@ export default defineConfig(({ mode }) => {
     server: {
       cors: true,
       proxy: {
+        '/aws': {
+          target: apiBaseUrl,
+          changeOrigin: true,
+          secure: false,
+        },
         '/cloudwatch': {
           target: apiBaseUrl,
           changeOrigin: true,
