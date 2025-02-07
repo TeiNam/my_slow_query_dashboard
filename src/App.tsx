@@ -4,6 +4,8 @@ import { MySQLMonitorPage } from './pages/MySQLMonitorPage';
 import { CloudWatchPage } from './pages/CloudWatchPage';
 import { PlanVisualizationPage } from './pages/PlanVisualizationPage';
 import { RDSInstancePage } from './pages/RDSInstancePage';
+import { useState, useEffect } from 'react';
+import { getAWSInfo } from './api/queries';
 
 const futureFlags = {
   v7_startTransition: true,  // React.startTransition 적용 (경고 제거)
@@ -11,8 +13,23 @@ const futureFlags = {
 };
 
 function App() {
-  const awsAccount = import.meta.env.VITE_AWS_ACCOUNT || 'Localhost';
-  const awsRegion = import.meta.env.VITE_AWS_REGION || 'Development';
+  const [awsAccount, setAwsAccount] = useState<string | null>(null);
+  const [awsRegion, setAwsRegion] = useState<string | null>(null);
+
+  // AWS 정보를 컴포넌트 마운트 시 한 번만 불러옵니다.
+  useEffect(() => {
+    const fetchAWSInfo = async () => {
+      try {
+        const awsInfo = await getAWSInfo();
+        setAwsAccount(awsInfo.account);
+        setAwsRegion(awsInfo.region);
+      } catch (err) {
+        console.error('AWS 정보를 가져오는데 실패했습니다:', err);
+      }
+    };
+
+    fetchAWSInfo();
+  }, []);
 
   return (
       <Router future={futureFlags}>
@@ -60,9 +77,13 @@ function App() {
                 </div>
 
                 <div className="flex items-center text-sm text-gray-600 text-right mr-8">
-                  <span>
+                  {awsAccount && awsRegion ? (
+                      <span>
                     <strong>AWS Account:</strong> {awsAccount} || <strong>Region:</strong> {awsRegion}
                   </span>
+                  ) : (
+                      <span>Loading AWS Info...</span>
+                  )}
                 </div>
               </div>
             </div>

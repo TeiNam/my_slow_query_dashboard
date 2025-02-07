@@ -1,3 +1,8 @@
+export interface AWSInfo {
+  account: string;
+  region: string;
+}
+
 export interface CollectionResponse {
   status: string;
   message: string;
