@@ -11,11 +11,17 @@ async function getBaseUrl(): Promise<string> {
 
 export async function getAWSInfo(): Promise<AWSInfo> {
   const baseUrl = await getBaseUrl();
-  const response = await fetch(`${baseUrl}/aws/info`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch AWS info');
+  try {
+    const response = await fetch(`${baseUrl}/aws/info`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Failed to fetch AWS info: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  } catch (error) {
+    console.error('AWS 정보를 가져오는데 실패했습니다:', error);
+    throw error;
   }
-  return response.json();
 }
 
 export async function startCloudWatchCollection(targetDate?: string) {

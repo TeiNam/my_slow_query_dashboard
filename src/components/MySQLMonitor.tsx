@@ -47,7 +47,7 @@ export function MySQLMonitor() {
   };
 
   return (
-      <div className="p-6 bg-white rounded-lg shadow-md">
+      <div className="p-6 bg-white rounded-lg shadow-md w-full">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Database className="w-6 h-6" />

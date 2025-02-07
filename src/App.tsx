@@ -4,6 +4,8 @@ import { MySQLMonitorPage } from './pages/MySQLMonitorPage';
 import { CloudWatchPage } from './pages/CloudWatchPage';
 import { PlanVisualizationPage } from './pages/PlanVisualizationPage';
 import { RDSInstancePage } from './pages/RDSInstancePage';
+import { NotFoundPage } from './pages/NotFoundPage';
+import { Footer } from './components/Footer';
 import { useState, useEffect, useCallback } from 'react';
 import { getAWSInfo } from './api/queries';
 
@@ -15,27 +17,58 @@ const futureFlags = {
 function App() {
   const [awsAccount, setAwsAccount] = useState<string | null>(null);
   const [awsRegion, setAwsRegion] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [retryTimer, setRetryTimer] = useState<NodeJS.Timeout | null>(null);
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 2000; // 2초
 
   const fetchAWSInfo = useCallback(async () => {
     try {
       const awsInfo = await getAWSInfo();
       setAwsAccount(awsInfo.account);
       setAwsRegion(awsInfo.region);
+      setRetryCount(0); // 성공시 재시도 카운트 초기화
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+        setRetryTimer(null);
+      }
     } catch (err) {
-      console.error('AWS 정보를 가져오는데 실패했습니다:', err);
-    }
-  }, []);
+      console.error(`AWS 정보를 가져오는데 실패했습니다 (시도 ${retryCount + 1}/${MAX_RETRIES}):`, err);
 
-  // AWS 정보를 컴포넌트 마운트 시 한 번만 불러옵니다.
+      // 재시도 로직
+      if (retryCount < MAX_RETRIES) {
+        setRetryCount(prev => prev + 1);
+        const timer = setTimeout(() => {
+          console.log(`재시도 중... (${retryCount + 1}/${MAX_RETRIES})`);
+          fetchAWSInfo();
+        }, RETRY_DELAY);
+        setRetryTimer(timer);
+      } else {
+        console.log('최대 재시도 횟수 초과, Unknown으로 설정');
+        setAwsAccount('Unknown');
+        setAwsRegion('Unknown');
+      }
+    }
+  }, [retryCount, retryTimer]);
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+      }
+    };
+  }, [retryTimer]);
+
   useEffect(() => {
     fetchAWSInfo();
   }, [fetchAWSInfo]);
 
   return (
       <Router future={futureFlags}>
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-gray-100 flex flex-col">
           <nav className="bg-white shadow-md">
-            <div className="max-w-[80%] mx-auto px-4">
+            <div className="w-full min-w-[1280px] max-w-[1920px] mx-auto px-4">
               <div className="flex justify-between h-16">
                 <div className="flex">
                   <div className="flex-shrink-0 flex items-center">
@@ -89,15 +122,17 @@ function App() {
             </div>
           </nav>
 
-          <main className="max-w-[80%] mx-auto py-6">
+          <main className="w-full min-w-[1280px] max-w-[1920px] mx-auto py-6">
             <Routes>
               <Route path="/" element={<MySQLMonitorPage />} />
-              <Route path="/mysql" element={<MySQLMonitorPage />} />
-              <Route path="/plan" element={<PlanVisualizationPage />} />
-              <Route path="/cloudwatch" element={<CloudWatchPage />} />
-              <Route path="/rds" element={<RDSInstancePage />} />
+              <Route path="mysql" element={<MySQLMonitorPage />} />
+              <Route path="plan" element={<PlanVisualizationPage />} />
+              <Route path="cloudwatch" element={<CloudWatchPage />} />
+              <Route path="rds" element={<RDSInstancePage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
+          <Footer />
         </div>
       </Router>
   );

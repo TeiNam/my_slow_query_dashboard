@@ -65,7 +65,7 @@ export function QueryExplain({ selectedPid }: QueryExplainProps) {
   };
 
   return (
-      <div className="p-6 bg-white rounded-lg shadow-md">
+      <div className="p-6 bg-white rounded-lg shadow-md w-full">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
           <Search className="w-6 h-6" />
           Query Explain

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { MySQLMonitor } from '../components/MySQLMonitor';
 import { QueryExplain } from '../components/QueryExplain';
 import { SlowQueryList } from '../components/SlowQueryList';
@@ -7,7 +7,7 @@ export function MySQLMonitorPage() {
     const [selectedPid, setSelectedPid] = useState<string>('');
 
     return (
-        <div className="px-4 sm:px-6 md:px-8 space-y-6">
+        <div className="space-y-6">
             <div className="md:flex md:items-center md:justify-between">
                 <div className="min-w-0 flex-1">
                     <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">

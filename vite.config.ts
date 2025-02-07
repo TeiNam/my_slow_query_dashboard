@@ -11,42 +11,43 @@ export default defineConfig(({ mode }) => {
     server: {
       cors: true,
       proxy: {
-        '/aws': {
+        '^/aws/.*': {
           target: apiBaseUrl,
           changeOrigin: true,
           secure: false,
         },
-        '/cloudwatch': {
+        '^/cloudwatch/.*': {
           target: apiBaseUrl,
           changeOrigin: true,
           secure: false,
         },
-        '/mysql': {
+        '^/mysql/.*': {
           target: apiBaseUrl,
           changeOrigin: true,
           secure: false,
         },
-        '/explain': {
+        '^/explain/.*': {
           target: apiBaseUrl,
           changeOrigin: true,
           secure: false,
         },
-        '/collectors': {
+        '^/collectors/.*': {
           target: apiBaseUrl,
           changeOrigin: true,
           secure: false,
         },
-        '/rds-instances': {
+        '^/rds-instances': {
+          target: apiBaseUrl,
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/rds-instances/, '/rds-instances'),
+        },
+        '^/cw-slowquery/.*': {
           target: apiBaseUrl,
           changeOrigin: true,
           secure: false,
         },
-        '/cw-slowquery': {
-          target: apiBaseUrl,
-          changeOrigin: true,
-          secure: false,
-        },
-        '/ws': {
+        '^/ws/.*': {
           target: wsBaseUrl,
           ws: true,
         },
