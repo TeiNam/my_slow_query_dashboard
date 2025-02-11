@@ -1,9 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Database, CloudCog, Share2, Server } from 'lucide-react';
+import { Database, CloudCog, Share2, Server, BarChart as ChartBar } from 'lucide-react';
 import { MySQLMonitorPage } from './pages/MySQLMonitorPage';
 import { CloudWatchPage } from './pages/CloudWatchPage';
 import { PlanVisualizationPage } from './pages/PlanVisualizationPage';
 import { RDSInstancePage } from './pages/RDSInstancePage';
+import { StatisticsPage } from './pages/StatisticsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { Footer } from './components/Footer';
 import { useState, useEffect, useCallback } from 'react';
@@ -100,6 +101,13 @@ function App() {
                       CloudWatch
                     </Link>
                     <Link
+                        to="/statistics"
+                        className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 hover:text-blue-600"
+                    >
+                      <ChartBar className="w-4 h-4 mr-2" />
+                      Statistics
+                    </Link>
+                    <Link
                         to="/rds"
                         className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900 hover:text-blue-600"
                     >
@@ -128,6 +136,7 @@ function App() {
               <Route path="mysql" element={<MySQLMonitorPage />} />
               <Route path="plan" element={<PlanVisualizationPage />} />
               <Route path="cloudwatch" element={<CloudWatchPage />} />
+              <Route path="statistics" element={<StatisticsPage />} />
               <Route path="rds" element={<RDSInstancePage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

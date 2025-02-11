@@ -91,3 +91,47 @@ export async function getSlowQueryStats() {
   const response = await fetch(`${baseUrl}/cw-slowquery/digest/stats`);
   return response.json();
 }
+
+export async function calculateSQLStatistics(yearMonth: string) {
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/sql/statistics/calculate/${yearMonth}`, {
+    method: 'POST'
+  });
+  return response.json();
+}
+
+export async function calculateUserStatistics(yearMonth: string) {
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/sql/statistics/users/calculate/${yearMonth}`, {
+    method: 'POST'
+  });
+  return response.json();
+}
+
+export async function getSQLStatistics(yearMonth: string, instanceIds?: string[]) {
+  const baseUrl = await getBaseUrl();
+  let url = `${baseUrl}/sql/statistics/${yearMonth}`;
+
+  if (instanceIds && instanceIds.length > 0) {
+    const params = new URLSearchParams();
+    instanceIds.forEach(id => params.append('instance_ids', id));
+    url += `?${params.toString()}`;
+  }
+
+  const response = await fetch(url);
+  return response.json();
+}
+
+export async function getUserStatistics(yearMonth: string, instanceIds?: string[]) {
+  const baseUrl = await getBaseUrl();
+  let url = `${baseUrl}/sql/statistics/users/${yearMonth}`;
+
+  if (instanceIds && instanceIds.length > 0) {
+    const params = new URLSearchParams();
+    instanceIds.forEach(id => params.append('instance_ids', id));
+    url += `?${params.toString()}`;
+  }
+
+  const response = await fetch(url);
+  return response.json();
+}

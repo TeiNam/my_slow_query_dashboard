@@ -106,3 +106,35 @@ export interface SlowQueryDigestResponse {
   month: string;
   stats: QueryStat[];
 }
+
+export interface SQLStatistics {
+  instance_id: string;
+  month: string;
+  unique_digest_count: number;
+  total_slow_query_count: number;
+  total_execution_count: number;
+  total_execution_time: number;
+  avg_execution_time: number;
+  total_rows_examined: number;
+  read_query_count: number;
+  write_query_count: number;
+  ddl_query_count: number;
+  commit_query_count: number;
+  created_at: string;
+  timestamp: string;
+}
+
+export interface UserStatistics {
+  instance_id: string;
+  month: string;
+  user: string;
+  total_queries: number;
+  total_exec_count: number;
+  total_exec_time: number;
+  avg_execution_time: number;
+  read_query_count: number;
+  write_query_count: number;
+  ddl_query_count: number;
+  commit_query_count: number;
+  created_at: string;
+}

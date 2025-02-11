@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Calendar, History } from 'lucide-react';
+import { Calendar, History, BarChart } from 'lucide-react';
+import { calculateSQLStatistics, calculateUserStatistics } from '../api/queries';
+import { format, subMonths } from 'date-fns';
 
 // API 응답 및 상태 인터페이스
 interface CollectionResponse {
@@ -40,6 +42,7 @@ export function CloudWatchMonitor() {
   const [collectionId, setCollectionId] = useState<string | null>(null);
   const [status, setStatus] = useState<CollectionStatus | null>(null);
   const [logs, setLogs] = useState<CollectionLog[]>([]);
+  const [calculatingStats, setCalculatingStats] = useState(false);
 
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
@@ -102,16 +105,16 @@ export function CloudWatchMonitor() {
             if (data.status === 'completed' || data.status === 'error') {
               addLog(
                   data.status === 'completed'
-                      ? '수집이 완료되었습니다. 15초 후 페이지가 새로고침됩니다.'
-                      : `수집이 실패했습니다: ${data.details?.error || '알 수 없는 오류'}\n30초 후 페이지가 새로고침됩니다.`,
+                      ? '수집이 완료되었습니다. 통계 데이터 생성을 시작합니다.'
+                      : `수집이 실패했습니다: ${data.details?.error || '알 수 없는 오류'}`,
                   data.status === 'completed' ? 'info' : 'error'
               );
 
-              console.log('Starting 15s refresh timer...'); // 디버깅용 로그
-              setTimeout(() => {
-                console.log('Refreshing page...'); // 디버깅용 로그
-                window.location.reload();
-              }, 30000);
+              if (data.status === 'completed') {
+                handleCalculateStats();
+              } else {
+                setTimeout(() => window.location.reload(), 30000);
+              }
             }
           } else if (data.type === 'log') {
             addLog(data.message, data.level || 'info');
@@ -148,7 +151,7 @@ export function CloudWatchMonitor() {
       setLogs([]);
       setStatus(null);
 
-      const result = await fetch(API_BASE_URL, {
+      const result = await fetch(`${API_BASE_URL}/cloudwatch/run`, {
         method: 'POST'
       });
 
@@ -169,6 +172,33 @@ export function CloudWatchMonitor() {
       addLog(error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCalculateStats = async () => {
+    try {
+      setCalculatingStats(true);
+      addLog('통계 데이터 생성을 시작합니다...', 'info');
+
+      const targetMonth = format(subMonths(new Date(), 1), 'yyyy-MM');
+
+      // SQL 통계 생성
+      addLog('SQL 통계 데이터 생성 중...', 'info');
+      await calculateSQLStatistics(targetMonth);
+      addLog('SQL 통계 데이터 생성 완료', 'info');
+
+      // 사용자 통계 생성
+      addLog('사용자별 통계 데이터 생성 중...', 'info');
+      await calculateUserStatistics(targetMonth);
+      addLog('사용자별 통계 데이터 생성 완료', 'info');
+
+      addLog('모든 통계 데이터 생성이 완료되었습니다. 15초 후 페이지가 새로고침됩니다.', 'info');
+      setTimeout(() => window.location.reload(), 15000);
+    } catch (error) {
+      console.error('Failed to calculate statistics:', error);
+      addLog('통계 데이터 생성 중 오류가 발생했습니다.', 'error');
+    } finally {
+      setCalculatingStats(false);
     }
   };
 
