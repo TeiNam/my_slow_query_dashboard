@@ -6,6 +6,7 @@ import { InstanceFilter } from './InstanceFilter';
 
 interface MetricsChartProps {
     data: SQLStatistics[];
+    prevMonthData: SQLStatistics[];
     selectedInstances: string[];
     onInstanceFilter: (instances: string[]) => void;
 }
@@ -19,29 +20,40 @@ interface MetricOption {
 }
 
 const METRICS: MetricOption[] = [
-    { key: 'slow_query_count', label: '슬로우 쿼리 수', color: '#3b82f6' },
-    { key: 'execution_count', label: '전체 실행 횟수', color: '#60a5fa' },
-    { key: 'execution_time', label: '전체 실행 시간 (초)', color: '#93c5fd' },
-    { key: 'avg_execution_time', label: '평균 실행 시간 (초)', color: '#bfdbfe' },
-    { key: 'rows_examined', label: '전체 조회 행 수', color: '#dbeafe' }
+    { key: 'slow_query_count', label: '슬로우 쿼리 수', color: '#3b82f6' }, // 파란색
+    { key: 'execution_count', label: '전체 실행 횟수', color: '#10b981' }, // 초록색
+    { key: 'execution_time', label: '전체 실행 시간 (초)', color: '#f59e0b' }, // 주황색
+    { key: 'avg_execution_time', label: '평균 실행 시간 (초)', color: '#8b5cf6' }, // 보라색
+    { key: 'rows_examined', label: '전체 조회 행 수', color: '#ef4444' } // 빨간색
 ];
 
-export default function MetricsChart({ data, selectedInstances, onInstanceFilter }: MetricsChartProps) {
+export function MetricsChart({ data, prevMonthData, selectedInstances, onInstanceFilter }: MetricsChartProps) {
     const [selectedMetrics, setSelectedMetrics] = useState<MetricKey[]>(['slow_query_count', 'execution_count']);
+    const [showComparison, setShowComparison] = useState(false);
     const instances = Array.from(new Set(data.map(stat => stat.instance_id)));
 
     const filteredData = selectedInstances.length > 0
         ? data.filter(stat => selectedInstances.includes(stat.instance_id))
         : data;
 
-    const chartData = filteredData.map(stat => ({
-        name: stat.instance_id,
-        slow_query_count: stat.total_slow_query_count,
-        execution_count: stat.total_execution_count,
-        execution_time: stat.total_execution_time,
-        avg_execution_time: stat.avg_execution_time,
-        rows_examined: stat.total_rows_examined,
-    }));
+    const chartData = filteredData.map(stat => {
+        const prevMonthStat = prevMonthData.find(p => p.instance_id === stat.instance_id);
+        return {
+            name: stat.instance_id,
+            slow_query_count: stat.total_slow_query_count,
+            execution_count: stat.total_execution_count,
+            execution_time: stat.total_execution_time,
+            avg_execution_time: stat.avg_execution_time,
+            rows_examined: stat.total_rows_examined,
+            ...(showComparison && prevMonthStat ? {
+                prev_slow_query_count: prevMonthStat.total_slow_query_count,
+                prev_execution_count: prevMonthStat.total_execution_count,
+                prev_execution_time: prevMonthStat.total_execution_time,
+                prev_avg_execution_time: prevMonthStat.avg_execution_time,
+                prev_rows_examined: prevMonthStat.total_rows_examined,
+            } : {})
+        };
+    });
 
     const handleMetricToggle = (metric: MetricKey) => {
         setSelectedMetrics(prev => {
@@ -65,6 +77,16 @@ export default function MetricsChart({ data, selectedInstances, onInstanceFilter
                         selectedInstances={selectedInstances}
                         onChange={onInstanceFilter}
                     />
+                    <button
+                        onClick={() => setShowComparison(!showComparison)}
+                        className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                            showComparison
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                    >
+                        전월 비교 {showComparison ? '끄기' : '켜기'}
+                    </button>
                 </div>
             </div>
             <div className="flex items-center justify-end mb-4">
@@ -95,12 +117,22 @@ export default function MetricsChart({ data, selectedInstances, onInstanceFilter
                         <Legend />
                         {METRICS.map(metric => (
                             selectedMetrics.includes(metric.key) && (
-                                <Bar
-                                    key={metric.key}
-                                    name={metric.label}
-                                    dataKey={metric.key}
-                                    fill={metric.color}
-                                />
+                                <>
+                                    <Bar
+                                        key={metric.key}
+                                        name={metric.label}
+                                        dataKey={metric.key}
+                                        fill={metric.color}
+                                    />
+                                    {showComparison && (
+                                        <Bar
+                                            key={`prev_${metric.key}`}
+                                            name={`전월 ${metric.label}`}
+                                            dataKey={`prev_${metric.key}`}
+                                            fill="#94a3b8" // 회색으로 통일
+                                        />
+                                    )}
+                                </>
                             )
                         ))}
                     </BarChart>
@@ -109,3 +141,7 @@ export default function MetricsChart({ data, selectedInstances, onInstanceFilter
         </div>
     );
 }
+
+
+
+export default MetricsChart

@@ -1,14 +1,18 @@
+import { useState } from 'react';
 import { SQLStatistics } from '../types/api';
 import { Database, Hash, Clock, FileText, Search, Edit, Table2 } from 'lucide-react';
 import { InstanceFilter } from './InstanceFilter';
 
 interface StatisticsTableProps {
     data: SQLStatistics[];
+    prevMonthData: SQLStatistics[];
     onInstanceFilter: (instances: string[]) => void;
     selectedInstances: string[];
 }
 
-export function StatisticsTable({ data, onInstanceFilter, selectedInstances }: StatisticsTableProps) {
+export function StatisticsTable({ data, prevMonthData, onInstanceFilter, selectedInstances }: StatisticsTableProps) {
+    const [showComparison, setShowComparison] = useState(false);
+
     if (!Array.isArray(data) || data.length === 0) {
         return (
             <div className="text-center py-8">
@@ -24,11 +28,23 @@ export function StatisticsTable({ data, onInstanceFilter, selectedInstances }: S
 
     return (
         <div>
-            <InstanceFilter
-                instances={instances}
-                selectedInstances={selectedInstances}
-                onChange={onInstanceFilter}
-            />
+            <div className="flex items-center justify-between mb-4">
+                <InstanceFilter
+                    instances={instances}
+                    selectedInstances={selectedInstances}
+                    onChange={onInstanceFilter}
+                />
+                <button
+                    onClick={() => setShowComparison(!showComparison)}
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                        showComparison
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                >
+                    전월 비교 {showComparison ? '끄기' : '켜기'}
+                </button>
+            </div>
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead>
@@ -77,13 +93,27 @@ export function StatisticsTable({ data, onInstanceFilter, selectedInstances }: S
                             <td className="px-4 py-3 whitespace-nowrap text-sm">
                                 <div className="flex items-center">
                                     <Search className="w-4 h-4 mr-2 text-gray-500" />
-                                    {stat.total_slow_query_count?.toLocaleString() ?? '0'}
+                                    <div className="flex flex-col">
+                                        <span>{stat.total_slow_query_count?.toLocaleString() ?? '0'}</span>
+                                        {showComparison && prevMonthData.find(p => p.instance_id === stat.instance_id) && (
+                                            <span className="text-xs text-gray-500">
+                                                전월: {prevMonthData.find(p => p.instance_id === stat.instance_id)?.total_slow_query_count?.toLocaleString() ?? '0'}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm">
                                 <div className="flex items-center">
                                     <FileText className="w-4 h-4 mr-2 text-gray-500" />
-                                    {stat.total_execution_count?.toLocaleString() ?? '0'}
+                                    <div className="flex flex-col">
+                                        <span>{stat.total_execution_count?.toLocaleString() ?? '0'}</span>
+                                        {showComparison && prevMonthData.find(p => p.instance_id === stat.instance_id) && (
+                                            <span className="text-xs text-gray-500">
+                                                전월: {prevMonthData.find(p => p.instance_id === stat.instance_id)?.total_execution_count?.toLocaleString() ?? '0'}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm">

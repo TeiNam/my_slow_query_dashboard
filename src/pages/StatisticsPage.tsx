@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { format, subMonths, parse } from 'date-fns';
+import { format, subMonths, parse, addMonths } from 'date-fns';
 import { BarChart as ChartBar, Calendar, Filter } from 'lucide-react';
 import { getSQLStatistics, getUserStatistics, getRDSInstances } from '../api/queries';
 import { SQLStatistics, UserStatistics } from '../types/api';
@@ -10,7 +10,9 @@ import * as Popover from '@radix-ui/react-popover';
 
 export function StatisticsPage() {
     const [statistics, setStatistics] = useState<SQLStatistics[]>([]);
+    const [prevMonthStatistics, setPrevMonthStatistics] = useState<SQLStatistics[]>([]);
     const [userStatistics, setUserStatistics] = useState<UserStatistics[]>([]);
+    const [prevMonthUserStatistics, setPrevMonthUserStatistics] = useState<UserStatistics[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedMonth, setSelectedMonth] = useState(format(subMonths(new Date(), 1), 'yyyy-MM'));
@@ -32,12 +34,19 @@ export function StatisticsPage() {
     const fetchStatistics = async () => {
         try {
             setLoading(true);
-            const [statsData, userStatsData] = await Promise.all([
+            const prevMonth = format(subMonths(parse(selectedMonth, 'yyyy-MM', new Date()), 1), 'yyyy-MM');
+
+            const [statsData, userStatsData, prevStatsData, prevUserStatsData] = await Promise.all([
                 getSQLStatistics(selectedMonth),
-                getUserStatistics(selectedMonth)
+                getUserStatistics(selectedMonth),
+                getSQLStatistics(prevMonth),
+                getUserStatistics(prevMonth)
             ]);
+
             setStatistics(statsData);
+            setPrevMonthStatistics(prevStatsData);
             setUserStatistics(userStatsData);
+            setPrevMonthUserStatistics(prevUserStatsData);
             setError(null);
         } catch (error) {
             console.error('Failed to fetch statistics:', error);
@@ -119,12 +128,14 @@ export function StatisticsPage() {
                         <h3 className="text-lg font-medium text-gray-900 mb-4">인스턴스별 통계</h3>
                         <StatisticsTable
                             data={statistics}
+                            prevMonthData={prevMonthStatistics}
                             selectedInstances={sqlSelectedInstances}
                             onInstanceFilter={setSqlSelectedInstances}
                         />
                     </div>
                     <MetricsChart
                         data={statistics}
+                        prevMonthData={prevMonthStatistics}
                         selectedInstances={chartSelectedInstances}
                         onInstanceFilter={setChartSelectedInstances}
                     />
@@ -132,6 +143,7 @@ export function StatisticsPage() {
                         <h3 className="text-lg font-medium text-gray-900 mb-4">사용자별 통계</h3>
                         <UserStatisticsTable
                             data={userStatistics}
+                            prevMonthData={prevMonthUserStatistics}
                             selectedInstances={userSelectedInstances}
                             onInstanceFilter={setUserSelectedInstances}
                         />
