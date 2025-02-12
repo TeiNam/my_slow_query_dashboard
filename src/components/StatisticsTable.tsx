@@ -76,82 +76,116 @@ export function StatisticsTable({ data, prevMonthData, onInstanceFilter, selecte
                     </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredData.map((stat) => (
-                        <tr key={stat.instance_id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                <div className="flex items-center">
-                                    <Database className="w-4 h-4 mr-2 text-gray-500" />
-                                    {stat.instance_id}
-                                </div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                <div className="flex items-center">
-                                    <Hash className="w-4 h-4 mr-2 text-gray-500" />
-                                    {stat.unique_digest_count?.toLocaleString() ?? '0'}
-                                </div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                <div className="flex items-center">
-                                    <Search className="w-4 h-4 mr-2 text-gray-500" />
-                                    <div className="flex flex-col">
-                                        <span>{stat.total_slow_query_count?.toLocaleString() ?? '0'}</span>
-                                        {showComparison && prevMonthData.find(p => p.instance_id === stat.instance_id) && (
-                                            <span className="text-xs text-gray-500">
-                                                전월: {prevMonthData.find(p => p.instance_id === stat.instance_id)?.total_slow_query_count?.toLocaleString() ?? '0'}
-                                            </span>
-                                        )}
+                    {filteredData.map((stat) => {
+                        const prevMonthStat = Array.isArray(prevMonthData)
+                            ? prevMonthData.find(p => p.instance_id === stat.instance_id)
+                            : null;
+
+                        return (
+                            <tr key={stat.instance_id} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                    <div className="flex items-center">
+                                        <Database className="w-4 h-4 mr-2 text-gray-500" />
+                                        {stat.instance_id}
                                     </div>
-                                </div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                <div className="flex items-center">
-                                    <FileText className="w-4 h-4 mr-2 text-gray-500" />
-                                    <div className="flex flex-col">
-                                        <span>{stat.total_execution_count?.toLocaleString() ?? '0'}</span>
-                                        {showComparison && prevMonthData.find(p => p.instance_id === stat.instance_id) && (
-                                            <span className="text-xs text-gray-500">
-                                                전월: {prevMonthData.find(p => p.instance_id === stat.instance_id)?.total_execution_count?.toLocaleString() ?? '0'}
-                                            </span>
-                                        )}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                    <div className="flex items-center">
+                                        <Hash className="w-4 h-4 mr-2 text-gray-500" />
+                                        <div className="flex flex-col">
+                                            <span>{stat.unique_digest_count?.toLocaleString() ?? '0'}</span>
+                                            {showComparison && prevMonthStat && (
+                                                <span className="text-xs text-gray-500">
+                                                        전월: {prevMonthStat.unique_digest_count?.toLocaleString() ?? '0'}
+                                                    </span>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                <div className="flex items-center">
-                                    <Clock className="w-4 h-4 mr-2 text-gray-500" />
-                                    {(stat.total_execution_time ?? 0).toFixed(2)}s
-                                </div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                <div className="flex items-center">
-                                    <Clock className="w-4 h-4 mr-2 text-gray-500" />
-                                    {(stat.avg_execution_time ?? 0).toFixed(2)}s
-                                </div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                <div className="flex items-center">
-                                    <Table2 className="w-4 h-4 mr-2 text-gray-500" />
-                                    {stat.total_rows_examined?.toLocaleString() ?? '0'}
-                                </div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      읽기: {stat.read_query_count ?? 0}
-                    </span>
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      쓰기: {stat.write_query_count ?? 0}
-                    </span>
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                      DDL: {stat.ddl_query_count ?? 0}
-                    </span>
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                      Commit: {stat.commit_query_count ?? 0}
-                    </span>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                    <div className="flex items-center">
+                                        <Search className="w-4 h-4 mr-2 text-gray-500" />
+                                        <div className="flex flex-col">
+                                            <span>{stat.total_slow_query_count?.toLocaleString() ?? '0'}</span>
+                                            {showComparison && prevMonthStat && (
+                                                <span className="text-xs text-gray-500">
+                                                        전월: {prevMonthStat.total_slow_query_count?.toLocaleString() ?? '0'}
+                                                    </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                    <div className="flex items-center">
+                                        <FileText className="w-4 h-4 mr-2 text-gray-500" />
+                                        <div className="flex flex-col">
+                                            <span>{stat.total_execution_count?.toLocaleString() ?? '0'}</span>
+                                            {showComparison && prevMonthStat && (
+                                                <span className="text-xs text-gray-500">
+                                                        전월: {prevMonthStat.total_execution_count?.toLocaleString() ?? '0'}
+                                                    </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                    <div className="flex items-center">
+                                        <Clock className="w-4 h-4 mr-2 text-gray-500" />
+                                        <div className="flex flex-col">
+                                            <span>{(stat.total_execution_time ?? 0).toFixed(2)}s</span>
+                                            {showComparison && prevMonthStat && (
+                                                <span className="text-xs text-gray-500">
+                                                        전월: {(prevMonthStat.total_execution_time ?? 0).toFixed(2)}s
+                                                    </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                    <div className="flex items-center">
+                                        <Clock className="w-4 h-4 mr-2 text-gray-500" />
+                                        <div className="flex flex-col">
+                                            <span>{(stat.avg_execution_time ?? 0).toFixed(2)}s</span>
+                                            {showComparison && prevMonthStat && (
+                                                <span className="text-xs text-gray-500">
+                                                        전월: {(prevMonthStat.avg_execution_time ?? 0).toFixed(2)}s
+                                                    </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                    <div className="flex items-center">
+                                        <Table2 className="w-4 h-4 mr-2 text-gray-500" />
+                                        <div className="flex flex-col">
+                                            <span>{stat.total_rows_examined?.toLocaleString() ?? '0'}</span>
+                                            {showComparison && prevMonthStat && (
+                                                <span className="text-xs text-gray-500">
+                                                        전월: {prevMonthStat.total_rows_examined?.toLocaleString() ?? '0'}
+                                                    </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                    <div className="flex items-center gap-2">
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                읽기: {stat.read_query_count ?? 0}
+                                            </span>
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                쓰기: {stat.write_query_count ?? 0}
+                                            </span>
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                DDL: {stat.ddl_query_count ?? 0}
+                                            </span>
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                                Commit: {stat.commit_query_count ?? 0}
+                                            </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        );
+                    })}
                     </tbody>
                 </table>
             </div>

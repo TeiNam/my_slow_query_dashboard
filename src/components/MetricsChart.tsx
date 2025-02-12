@@ -37,22 +37,32 @@ export function MetricsChart({ data, prevMonthData, selectedInstances, onInstanc
         : data;
 
     const chartData = filteredData.map(stat => {
-        const prevMonthStat = prevMonthData.find(p => p.instance_id === stat.instance_id);
-        return {
+        // prevMonthData가 배열인지 확인하고 안전하게 처리
+        const prevMonthStat = Array.isArray(prevMonthData)
+            ? prevMonthData.find(p => p.instance_id === stat.instance_id)
+            : null;
+
+        const baseData = {
             name: stat.instance_id,
-            slow_query_count: stat.total_slow_query_count,
-            execution_count: stat.total_execution_count,
-            execution_time: stat.total_execution_time,
-            avg_execution_time: stat.avg_execution_time,
-            rows_examined: stat.total_rows_examined,
-            ...(showComparison && prevMonthStat ? {
-                prev_slow_query_count: prevMonthStat.total_slow_query_count,
-                prev_execution_count: prevMonthStat.total_execution_count,
-                prev_execution_time: prevMonthStat.total_execution_time,
-                prev_avg_execution_time: prevMonthStat.avg_execution_time,
-                prev_rows_examined: prevMonthStat.total_rows_examined,
-            } : {})
+            slow_query_count: stat.total_slow_query_count ?? 0,
+            execution_count: stat.total_execution_count ?? 0,
+            execution_time: stat.total_execution_time ?? 0,
+            avg_execution_time: stat.avg_execution_time ?? 0,
+            rows_examined: stat.total_rows_examined ?? 0,
         };
+
+        if (showComparison && prevMonthStat) {
+            return {
+                ...baseData,
+                prev_slow_query_count: prevMonthStat.total_slow_query_count ?? 0,
+                prev_execution_count: prevMonthStat.total_execution_count ?? 0,
+                prev_execution_time: prevMonthStat.total_execution_time ?? 0,
+                prev_avg_execution_time: prevMonthStat.avg_execution_time ?? 0,
+                prev_rows_examined: prevMonthStat.total_rows_examined ?? 0,
+            };
+        }
+
+        return baseData;
     });
 
     const handleMetricToggle = (metric: MetricKey) => {
@@ -118,12 +128,6 @@ export function MetricsChart({ data, prevMonthData, selectedInstances, onInstanc
                         {METRICS.map(metric => (
                             selectedMetrics.includes(metric.key) && (
                                 <>
-                                    <Bar
-                                        key={metric.key}
-                                        name={metric.label}
-                                        dataKey={metric.key}
-                                        fill={metric.color}
-                                    />
                                     {showComparison && (
                                         <Bar
                                             key={`prev_${metric.key}`}
@@ -132,6 +136,12 @@ export function MetricsChart({ data, prevMonthData, selectedInstances, onInstanc
                                             fill="#94a3b8" // 회색으로 통일
                                         />
                                     )}
+                                    <Bar
+                                        key={metric.key}
+                                        name={metric.label}
+                                        dataKey={metric.key}
+                                        fill={metric.color}
+                                    />
                                 </>
                             )
                         ))}
@@ -142,6 +152,4 @@ export function MetricsChart({ data, prevMonthData, selectedInstances, onInstanc
     );
 }
 
-
-
-export default MetricsChart
+export default MetricsChart;

@@ -1,7 +1,8 @@
+// StatisticsPage.tsx
 import { useState, useEffect } from 'react';
-import { format, subMonths, parse, addMonths } from 'date-fns';
-import { BarChart as ChartBar, Calendar, Filter } from 'lucide-react';
-import { getSQLStatistics, getUserStatistics, getRDSInstances } from '../api/queries';
+import { format, subMonths, parse } from 'date-fns';
+import { BarChart as ChartBar, Calendar } from 'lucide-react';
+import { getSQLStatistics, getUserStatistics } from '../api/queries';
 import { SQLStatistics, UserStatistics } from '../types/api';
 import { StatisticsTable } from '../components/StatisticsTable';
 import { UserStatisticsTable } from '../components/UserStatisticsTable';
@@ -15,17 +16,23 @@ export function StatisticsPage() {
     const [prevMonthUserStatistics, setPrevMonthUserStatistics] = useState<UserStatistics[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedMonth, setSelectedMonth] = useState(format(subMonths(new Date(), 1), 'yyyy-MM'));
     const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
     const [sqlSelectedInstances, setSqlSelectedInstances] = useState<string[]>([]);
     const [userSelectedInstances, setUserSelectedInstances] = useState<string[]>([]);
     const [chartSelectedInstances, setChartSelectedInstances] = useState<string[]>([]);
+    const [selectedMonth, setSelectedMonth] = useState(() => {
+        const lastMonth = subMonths(new Date(), 1);
+        return format(lastMonth, 'yyyy-MM');
+    });
 
-    // 최근 12개월 목록 생성
+    // 최근 6개월 목록 생성 (현재 월 제외)
     const getRecentMonths = () => {
         const months = [];
-        for (let i = 1; i < 7; i++) {
-            const date = subMonths(new Date(), i);
+        const currentDate = new Date();
+
+        // 현재 달 제외, 이전 6개월만 표시
+        for (let i = 1; i <= 6; i++) {
+            const date = subMonths(currentDate, i);
             months.push(format(date, 'yyyy-MM'));
         }
         return months.reverse();
@@ -34,20 +41,34 @@ export function StatisticsPage() {
     const fetchStatistics = async () => {
         try {
             setLoading(true);
+            setError(null);
+
+            // 이전 달 계산
             const prevMonth = format(subMonths(parse(selectedMonth, 'yyyy-MM', new Date()), 1), 'yyyy-MM');
 
-            const [statsData, userStatsData, prevStatsData, prevUserStatsData] = await Promise.all([
+            // Promise.allSettled를 사용하여 모든 API 호출 처리
+            const [statsData, userStatsData, prevStatsData, prevUserStatsData] = await Promise.allSettled([
                 getSQLStatistics(selectedMonth),
                 getUserStatistics(selectedMonth),
                 getSQLStatistics(prevMonth),
                 getUserStatistics(prevMonth)
             ]);
 
-            setStatistics(statsData);
-            setPrevMonthStatistics(prevStatsData);
-            setUserStatistics(userStatsData);
-            setPrevMonthUserStatistics(prevUserStatsData);
-            setError(null);
+            // 각 Promise 결과 처리
+            setStatistics(statsData.status === 'fulfilled' ? statsData.value : []);
+            setUserStatistics(userStatsData.status === 'fulfilled' ? userStatsData.value : []);
+            setPrevMonthStatistics(prevStatsData.status === 'fulfilled' ? prevStatsData.value : []);
+            setPrevMonthUserStatistics(prevUserStatsData.status === 'fulfilled' ? prevUserStatsData.value : []);
+
+            // 모든 데이터가 비어있는 경우 에러 메시지 설정
+            if (
+                statsData.status === 'fulfilled' &&
+                userStatsData.status === 'fulfilled' &&
+                !statsData.value?.length &&
+                !userStatsData.value?.length
+            ) {
+                setError('선택한 월의 통계 데이터가 없습니다.');
+            }
         } catch (error) {
             console.error('Failed to fetch statistics:', error);
             setError('통계 데이터를 가져오는데 실패했습니다.');
@@ -70,9 +91,7 @@ export function StatisticsPage() {
                     <div className="flex items-center gap-4">
                         <Popover.Root open={isMonthPickerOpen} onOpenChange={setIsMonthPickerOpen}>
                             <Popover.Trigger asChild>
-                                <button
-                                    className="inline-flex items-center gap-2 px-3 py-1 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
+                                <button className="inline-flex items-center gap-2 px-3 py-1 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <Calendar className="w-4 h-4" />
                                     {parse(selectedMonth, 'yyyy-MM', new Date()).toLocaleDateString('ko-KR', {
                                         year: 'numeric',
@@ -82,10 +101,7 @@ export function StatisticsPage() {
                                 </button>
                             </Popover.Trigger>
                             <Popover.Portal>
-                                <Popover.Content
-                                    className="bg-white rounded-md shadow-lg p-2 w-48"
-                                    sideOffset={5}
-                                >
+                                <Popover.Content className="bg-white rounded-md shadow-lg p-2 w-48" sideOffset={5}>
                                     <div className="space-y-1">
                                         {getRecentMonths().map((month) => (
                                             <button
@@ -143,7 +159,6 @@ export function StatisticsPage() {
                         <h3 className="text-lg font-medium text-gray-900 mb-4">사용자별 통계</h3>
                         <UserStatisticsTable
                             data={userStatistics}
-                            prevMonthData={prevMonthUserStatistics}
                             selectedInstances={userSelectedInstances}
                             onInstanceFilter={setUserSelectedInstances}
                         />
