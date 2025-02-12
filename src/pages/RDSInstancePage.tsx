@@ -1,4 +1,5 @@
 import { RDSInstanceList } from '../components/RDSInstanceList';
+import { MySQLMonitor } from '../components/MySQLMonitor';
 
 export function RDSInstancePage() {
     return (
@@ -12,6 +13,7 @@ export function RDSInstancePage() {
             </div>
 
             <RDSInstanceList />
+            <MySQLMonitor />
         </div>
     );
 }

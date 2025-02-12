@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { MySQLMonitor } from '../components/MySQLMonitor';
 import { QueryExplain } from '../components/QueryExplain';
 import { SlowQueryList } from '../components/SlowQueryList';
 
@@ -19,7 +18,6 @@ export function MySQLMonitorPage() {
                 </div>
             </div>
 
-            <MySQLMonitor/>
             <SlowQueryList onPidSelect={setSelectedPid}/>
             <QueryExplain selectedPid={selectedPid}/>
         </div>
