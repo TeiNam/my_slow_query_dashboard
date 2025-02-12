@@ -26,6 +26,10 @@ export function StatisticsTable({ data, prevMonthData, onInstanceFilter, selecte
         ? data.filter(stat => selectedInstances.includes(stat.instance_id))
         : data;
 
+    const sortedData = [...filteredData].sort((a, b) =>
+        a.instance_id.localeCompare(b.instance_id)
+    );
+
     return (
         <div>
             <div className="flex items-center justify-between mb-4">
@@ -76,7 +80,7 @@ export function StatisticsTable({ data, prevMonthData, onInstanceFilter, selecte
                     </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredData.map((stat) => {
+                    {sortedData.map((stat) => {   // filteredData를 sortedData로 변경
                         const prevMonthStat = Array.isArray(prevMonthData)
                             ? prevMonthData.find(p => p.instance_id === stat.instance_id)
                             : null;

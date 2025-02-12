@@ -31,7 +31,7 @@ export function StatisticsPage() {
         const currentDate = new Date();
 
         // 현재 달 제외, 이전 6개월만 표시
-        for (let i = 1; i <= 6; i++) {
+        for (let i = 1; i <= 3; i++) {
             const date = subMonths(currentDate, i);
             months.push(format(date, 'yyyy-MM'));
         }

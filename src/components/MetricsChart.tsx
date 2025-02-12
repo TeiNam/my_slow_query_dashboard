@@ -36,8 +36,11 @@ export function MetricsChart({ data, prevMonthData, selectedInstances, onInstanc
         ? data.filter(stat => selectedInstances.includes(stat.instance_id))
         : data;
 
-    const chartData = filteredData.map(stat => {
-        // prevMonthData가 배열인지 확인하고 안전하게 처리
+    const sortedData = [...filteredData].sort((a, b) =>
+        a.instance_id.localeCompare(b.instance_id)
+    );
+
+    const chartData = sortedData.map(stat => {   // filteredData를 sortedData로 변경
         const prevMonthStat = Array.isArray(prevMonthData)
             ? prevMonthData.find(p => p.instance_id === stat.instance_id)
             : null;
