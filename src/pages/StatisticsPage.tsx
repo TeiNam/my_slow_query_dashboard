@@ -1,7 +1,7 @@
 // StatisticsPage.tsx
 import { useState, useEffect } from 'react';
 import { format, subMonths, parse } from 'date-fns';
-import { BarChart as ChartBar, Calendar } from 'lucide-react';
+import { BarChart as ChartBar, Calendar, Database } from 'lucide-react';
 import { getSQLStatistics, getUserStatistics } from '../api/queries';
 import { SQLStatistics, UserStatistics } from '../types/api';
 import { StatisticsTable } from '../components/StatisticsTable';
@@ -86,7 +86,7 @@ export function StatisticsPage() {
             <div className="md:flex md:items-center md:justify-between">
                 <div className="min-w-0 flex-1 space-y-2">
                     <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-                        SQL 실행 통계
+                        CloudWatch SlowLogs Statistics
                     </h2>
                     <div className="flex items-center gap-4">
                         <Popover.Root open={isMonthPickerOpen} onOpenChange={setIsMonthPickerOpen}>
@@ -141,7 +141,10 @@ export function StatisticsPage() {
             ) : statistics.length > 0 ? (
                 <>
                     <div className="bg-white rounded-lg shadow-md p-6">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">인스턴스별 통계</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                            <Database className="w-5 h-5" />
+                            인스턴스별 통계
+                        </h3>
                         <StatisticsTable
                             data={statistics}
                             prevMonthData={prevMonthStatistics}
@@ -156,7 +159,10 @@ export function StatisticsPage() {
                         onInstanceFilter={setChartSelectedInstances}
                     />
                     <div className="bg-white rounded-lg shadow-md p-6">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">사용자별 통계</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                            <Database className="w-5 h-5" />
+                            사용자별 통계
+                        </h3>
                         <UserStatisticsTable
                             data={userStatistics}
                             selectedInstances={userSelectedInstances}

@@ -82,7 +82,7 @@ export function MetricsChart({ data, prevMonthData, selectedInstances, onInstanc
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
                     <Database className="w-5 h-5" />
-                    인스턴스별 차트
+                    인스턴스 쿼리 차트
                 </h3>
                 <div className="flex items-center gap-4">
                     <InstanceFilter
