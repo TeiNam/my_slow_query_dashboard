@@ -94,7 +94,7 @@ export async function getSlowQueryStats() {
 
 export async function calculateSQLStatistics(yearMonth: string) {
   const baseUrl = await getBaseUrl();
-  const response = await fetch(`${baseUrl}/api/v1/sql/statistics/calculate/${yearMonth}`, { // /api/v1 추가
+  const response = await fetch(`${baseUrl}/sql/statistics/calculate/${yearMonth}`, { // /api/v1 추가
     method: 'POST'
   });
   return response.json();
@@ -102,7 +102,7 @@ export async function calculateSQLStatistics(yearMonth: string) {
 
 export async function calculateUserStatistics(yearMonth: string) {
   const baseUrl = await getBaseUrl();
-  const response = await fetch(`${baseUrl}/api/v1/sql/statistics/users/calculate/${yearMonth}`, { // /api/v1 추가
+  const response = await fetch(`${baseUrl}/sql/statistics/users/calculate/${yearMonth}`, { // /api/v1 추가
     method: 'POST'
   });
   return response.json();
@@ -110,7 +110,7 @@ export async function calculateUserStatistics(yearMonth: string) {
 
 export async function getSQLStatistics(yearMonth: string, instanceIds?: string[]) {
   const baseUrl = await getBaseUrl();
-  let url = `${baseUrl}/api/v1/sql/statistics/${yearMonth}`; // /api/v1 추가
+  let url = `${baseUrl}/sql/statistics/${yearMonth}`; // /api/v1 추가
 
   if (instanceIds && instanceIds.length > 0) {
     const params = new URLSearchParams();
@@ -124,7 +124,7 @@ export async function getSQLStatistics(yearMonth: string, instanceIds?: string[]
 
 export async function getUserStatistics(yearMonth: string, instanceIds?: string[]) {
   const baseUrl = await getBaseUrl();
-  let url = `${baseUrl}/api/v1/sql/statistics/users/${yearMonth}`; // /api/v1 추가
+  let url = `${baseUrl}/sql/statistics/users/${yearMonth}`; // /api/v1 추가
 
   if (instanceIds && instanceIds.length > 0) {
     const params = new URLSearchParams();
