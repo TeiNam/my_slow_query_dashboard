@@ -93,19 +93,67 @@ export async function getSlowQueryStats() {
 }
 
 export async function calculateSQLStatistics(yearMonth: string) {
-  const baseUrl = await getBaseUrl();
-  const response = await fetch(`${baseUrl}/sql/statistics/calculate/${yearMonth}`, { // /api/v1 추가
-    method: 'POST'
-  });
-  return response.json();
+  try {
+    const baseUrl = await getBaseUrl();
+    const response = await fetch(`${baseUrl}/sql/statistics/calculate/${yearMonth}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => {
+        return { detail: `HTTP 오류: ${response.status} ${response.statusText}` };
+      });
+      console.error('통계 계산 API 응답 오류:', errorData);
+      return {
+        status: 'error',
+        message: `통계 계산에 실패했습니다: ${errorData.detail || response.statusText}`,
+        error: errorData
+      };
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('SQL 통계 계산 중 에러 발생:', error);
+    return {
+      status: 'error',
+      message: `통계 계산 중 예외가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`
+    };
+  }
 }
 
 export async function calculateUserStatistics(yearMonth: string) {
-  const baseUrl = await getBaseUrl();
-  const response = await fetch(`${baseUrl}/sql/statistics/users/calculate/${yearMonth}`, { // /api/v1 추가
-    method: 'POST'
-  });
-  return response.json();
+  try {
+    const baseUrl = await getBaseUrl();
+    const response = await fetch(`${baseUrl}/sql/statistics/users/calculate/${yearMonth}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => {
+        return { detail: `HTTP 오류: ${response.status} ${response.statusText}` };
+      });
+      console.error('사용자 통계 계산 API 응답 오류:', errorData);
+      return {
+        status: 'error',
+        message: `사용자 통계 계산에 실패했습니다: ${errorData.detail || response.statusText}`,
+        error: errorData
+      };
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('사용자 통계 계산 중 에러 발생:', error);
+    return {
+      status: 'error',
+      message: `사용자 통계 계산 중 예외가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`
+    };
+  }
 }
 
 export async function getSQLStatistics(yearMonth: string, instanceIds?: string[]) {

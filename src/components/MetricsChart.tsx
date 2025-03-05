@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { SQLStatistics } from '../types/api';
 import { Database } from 'lucide-react';
@@ -130,22 +130,20 @@ export function MetricsChart({ data, prevMonthData, selectedInstances, onInstanc
                         <Legend />
                         {METRICS.map(metric => (
                             selectedMetrics.includes(metric.key) && (
-                                <>
+                                <React.Fragment key={metric.key}>
                                     {showComparison && (
                                         <Bar
-                                            key={`prev_${metric.key}`}
                                             name={`전월 ${metric.label}`}
                                             dataKey={`prev_${metric.key}`}
-                                            fill="#94a3b8" // 회색으로 통일
+                                            fill="#94a3b8"
                                         />
                                     )}
                                     <Bar
-                                        key={metric.key}
                                         name={metric.label}
                                         dataKey={metric.key}
                                         fill={metric.color}
                                     />
-                                </>
+                                </React.Fragment>
                             )
                         ))}
                     </BarChart>
