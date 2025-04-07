@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { QueryExplain } from '../components/QueryExplain';
 import { SlowQueryList } from '../components/SlowQueryList';
-import { RefreshCw, Pause } from 'lucide-react';
+import { RefreshCw, Pause, AlertCircle } from 'lucide-react';
 
 // 새로고침 간격 옵션 (초 단위)
 const REFRESH_INTERVALS = [
@@ -23,11 +23,30 @@ export function MySQLMonitorPage() {
     const [nextRefreshIn, setNextRefreshIn] = useState<number>(30);
     const refreshTimerRef = useRef<number | null>(null);
     const countdownTimerRef = useRef<number | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+    const [showRefreshToast, setShowRefreshToast] = useState<boolean>(false);
+    const [refreshCount, setRefreshCount] = useState<number>(0);
 
     // 슬로우 쿼리 목록 새로고침 핸들러 (SlowQueryList 컴포넌트로 전달)
     const handleRefresh = () => {
+        setIsRefreshing(true);
         setLastRefreshed(new Date());
         setNextRefreshIn(refreshInterval);
+        
+        // 이전 토스트 메시지가 있다면 제거
+        setShowRefreshToast(false);
+        
+        // 잠시 후 새로고침 완료 토스트 표시
+        setTimeout(() => {
+            setIsRefreshing(false);
+            setShowRefreshToast(true);
+            setRefreshCount(prev => prev + 1);
+            
+            // 토스트 메시지 3초 후 자동 제거
+            setTimeout(() => {
+                setShowRefreshToast(false);
+            }, 3000);
+        }, 1000);
     };
 
     // 자동 새로고침 toggle
@@ -154,8 +173,15 @@ export function MySQLMonitorPage() {
                 
                 {/* 자동 새로고침 컨트롤 */}
                 <div className="flex items-center space-x-4 mt-4 md:mt-0">
-                    <div className="text-sm text-gray-500">
-                        마지막 새로고침: {formatTime(lastRefreshed)}
+                    <div className={`text-sm ${isRefreshing ? 'text-blue-600 font-medium' : 'text-gray-500'}`}>
+                        {isRefreshing ? (
+                            <span className="flex items-center">
+                                <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                                새로고침 중...
+                            </span>
+                        ) : (
+                            <>마지막 새로고침: {formatTime(lastRefreshed)}</>
+                        )}
                     </div>
                     
                     <div className="flex items-center space-x-2">
@@ -196,19 +222,32 @@ export function MySQLMonitorPage() {
                         
                         <button
                             onClick={handleManualRefresh}
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium bg-blue-600 text-white hover:bg-blue-700"
+                            disabled={isRefreshing}
+                            className={`inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium ${
+                                isRefreshing 
+                                    ? 'bg-blue-400 cursor-not-allowed' 
+                                    : 'bg-blue-600 hover:bg-blue-700'
+                            } text-white`}
                             title="지금 새로고침"
                         >
-                            <RefreshCw className="w-4 h-4" />
+                            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                         </button>
                     </div>
                 </div>
             </div>
 
+            {showRefreshToast && (
+                <div className="bg-blue-50 text-blue-700 p-3 rounded-md mb-4 flex items-center space-x-2 shadow-md animate-fade-in-out">
+                    <RefreshCw className="w-5 h-5" />
+                    <span>데이터가 새로고침되었습니다. (총 {refreshCount}회 새로고침)</span>
+                </div>
+            )}
+            
             <SlowQueryList 
                 onPidSelect={setSelectedPid}
                 onRefresh={handleRefresh}
                 autoRefresh={isAutoRefreshEnabled}
+                isRefreshing={isRefreshing}
             />
             <QueryExplain selectedPid={selectedPid}/>
         </div>

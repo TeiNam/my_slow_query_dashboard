@@ -14,9 +14,10 @@ interface SlowQueryListProps {
   onPidSelect: (pid: string) => void;
   onRefresh?: () => void; // 부모 컴포넌트에 새로고침 상태를 알리는 콜백
   autoRefresh?: boolean; // 자동 새로고침 활성화 여부
+  isRefreshing?: boolean; // 현재 새로고침 진행 여부
 }
 
-export function SlowQueryList({ onPidSelect, onRefresh, autoRefresh = true }: SlowQueryListProps) {
+export function SlowQueryList({ onPidSelect, onRefresh, autoRefresh = true, isRefreshing = false }: SlowQueryListProps) {
   const [queries, setQueries] = useState<QueryListResponse | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -42,6 +43,10 @@ export function SlowQueryList({ onPidSelect, onRefresh, autoRefresh = true }: Sl
       const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch queries');
       const data = await response.json();
+      
+      // 이전 쿼리와 새로운 쿼리를 비교하여 변경 여부 확인
+      const hasNewData = JSON.stringify(data.items) !== JSON.stringify(queries?.items);
+      
       setQueries(data);
 
       if (data.items && !selectedInstance) {
@@ -54,6 +59,13 @@ export function SlowQueryList({ onPidSelect, onRefresh, autoRefresh = true }: Sl
       // 부모 컴포넌트에 새로고침 완료 알림
       if (onRefresh) {
         onRefresh();
+      }
+      
+      // 로그 메시지로 새로고침 여부 표시
+      if (hasNewData) {
+        console.log('✅ 데이터가 새로고침되었습니다:', new Date().toLocaleTimeString());
+      } else {
+        console.log('ℹ️ 새로고침 완료 - 변경사항 없음:', new Date().toLocaleTimeString());
       }
     } catch (err) {
       setError('Failed to fetch slow queries');
@@ -177,11 +189,11 @@ export function SlowQueryList({ onPidSelect, onRefresh, autoRefresh = true }: Sl
               
               <button
                 onClick={fetchQueries}
-                disabled={refreshing}
-                className="inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
+                disabled={refreshing || isRefreshing}
+                className="inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50"
                 title="수동 새로고침"
               >
-                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${refreshing || isRefreshing ? 'animate-spin' : ''}`} />
               </button>
             </div>
           </div>
@@ -206,7 +218,7 @@ export function SlowQueryList({ onPidSelect, onRefresh, autoRefresh = true }: Sl
                     <th className="px-2 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-full">Query</th>
                   </tr>
                   </thead>
-                  <tbody className={`bg-white divide-y divide-gray-200 ${refreshing ? 'opacity-50' : ''}`}>
+                  <tbody className={`bg-white divide-y divide-gray-200 ${refreshing || isRefreshing ? 'opacity-50' : ''}`}>
                   {queries?.items.map((query) => (
                       <tr
                           key={`${query.pid}-${query.start}`}
