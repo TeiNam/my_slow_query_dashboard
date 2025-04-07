@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Clock, Database, User, Server, Copy, Check, Globe, Filter, Hash, X } from 'lucide-react';
+import { Calendar, Clock, Database, User, Server, Copy, Check, Globe, Filter, Hash, X, RefreshCw } from 'lucide-react';
 import { format } from 'sql-formatter';
 import { SlowQuery } from '../types/api';
 
@@ -12,9 +12,11 @@ interface QueryListResponse {
 
 interface SlowQueryListProps {
   onPidSelect: (pid: string) => void;
+  onRefresh?: () => void; // 부모 컴포넌트에 새로고침 상태를 알리는 콜백
+  autoRefresh?: boolean; // 자동 새로고침 활성화 여부
 }
 
-export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
+export function SlowQueryList({ onPidSelect, onRefresh, autoRefresh = true }: SlowQueryListProps) {
   const [queries, setQueries] = useState<QueryListResponse | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -24,10 +26,12 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
   const [timezone, setTimezone] = useState<'UTC' | 'KST'>('KST');
   const [selectedInstance, setSelectedInstance] = useState<string>('');
   const [instances, setInstances] = useState<string[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchQueries = async () => {
     try {
       setLoading(true);
+      setRefreshing(true);
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
       let url = `${baseUrl}/mysql/queries?page=${currentPage}&page_size=20`;
 
@@ -46,17 +50,30 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
       }
 
       setError(null);
+      
+      // 부모 컴포넌트에 새로고침 완료 알림
+      if (onRefresh) {
+        onRefresh();
+      }
     } catch (err) {
       setError('Failed to fetch slow queries');
       console.error('Error fetching queries:', err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchQueries();
   }, [currentPage, selectedInstance]);
+  
+  // autoRefresh prop이 변경되었을 때 반응
+  useEffect(() => {
+    if (autoRefresh) {
+      fetchQueries();
+    }
+  }, [autoRefresh]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -113,6 +130,13 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
     return (
         <div className="bg-red-50 p-4 rounded-lg">
           <p className="text-red-700">{error}</p>
+          <button 
+            onClick={fetchQueries}
+            className="mt-2 inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium bg-red-600 text-white hover:bg-red-700"
+          >
+            <RefreshCw className="w-4 h-4 mr-1" />
+            다시 시도
+          </button>
         </div>
     );
   }
@@ -150,10 +174,19 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                   <option value="UTC">UTC</option>
                 </select>
               </div>
+              
+              <button
+                onClick={fetchQueries}
+                disabled={refreshing}
+                className="inline-flex items-center px-2 py-1 border border-transparent rounded-md shadow-sm text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
+                title="수동 새로고침"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              </button>
             </div>
           </div>
 
-          {loading ? (
+          {loading && !queries ? (
               <div className="animate-pulse space-y-4">
                 {[...Array(3)].map((_, i) => (
                     <div key={i} className="h-24 bg-gray-200 rounded"></div>
@@ -173,7 +206,7 @@ export function SlowQueryList({ onPidSelect }: SlowQueryListProps) {
                     <th className="px-2 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-full">Query</th>
                   </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className={`bg-white divide-y divide-gray-200 ${refreshing ? 'opacity-50' : ''}`}>
                   {queries?.items.map((query) => (
                       <tr
                           key={`${query.pid}-${query.start}`}
